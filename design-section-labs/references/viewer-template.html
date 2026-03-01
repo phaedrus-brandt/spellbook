@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Catalogue — {{PROJECT_NAME}}</title>
+  <meta name="description" content="Design catalogue for {{PROJECT_NAME}}. Grid, compare, fullscreen preview.">
+
+  <!-- Use project fonts (match current brand). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles/catalogue.css">
+</head>
+<body>
+  <header class="catalogue-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark">◈</span>
+        <div class="brand-text">
+          <h1 class="brand-name">{{PROJECT_NAME}}</h1>
+          <span class="brand-subtitle">Design Catalogue</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn" data-view="grid" aria-current="true">Grid</button>
+        <button class="nav-btn" data-view="compare">Compare</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="catalogue-main">
+    <section class="view-grid" id="view-grid">
+      <div class="catalogue-intro">
+        <h2 class="intro-title">Section labs</h2>
+        <p class="intro-lead">Each lab isolates change: baseline vs variants. Click for fullscreen. Use Compare for side-by-side.</p>
+      </div>
+
+      <div class="proposals-grid">
+        <!-- Duplicate per proposal -->
+        <article class="proposal-card" data-proposal="01-hero-lab">
+          <div class="card-thumbnail">
+            <iframe src="./proposals/01-hero-lab/preview.html" loading="lazy" title="Hero Lab Preview" tabindex="-1"></iframe>
+            <div class="thumbnail-overlay">
+              <button class="preview-btn" aria-label="Open full preview of Hero Lab">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="card-header">
+              <span class="card-number">01</span>
+              <h3 class="card-name">Hero Lab</h3>
+            </div>
+            <p class="card-soul">Baseline hero, then micro variants. No redesign.</p>
+            <div class="card-dna">
+              <span class="dna-tag">centered</span>
+              <span class="dna-tag">brand-tinted</span>
+              <span class="dna-tag">editorial</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="view-compare" id="view-compare" hidden>
+      <div class="compare-controls">
+        <div class="compare-select-group">
+          <label class="compare-label" for="compare-left">Left Preview</label>
+          <select class="compare-select" id="compare-left">
+            <option value="">Select proposal…</option>
+            <option value="01-hero-lab">01 — Hero Lab</option>
+          </select>
+        </div>
+        <div class="compare-vs"><span>VS</span></div>
+        <div class="compare-select-group">
+          <label class="compare-label" for="compare-right">Right Preview</label>
+          <select class="compare-select" id="compare-right">
+            <option value="">Select proposal…</option>
+            <option value="01-hero-lab">01 — Hero Lab</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="compare-panels">
+        <div class="compare-panel" id="panel-left">
+          <iframe src="./proposals/01-hero-lab/preview.html" title="Left comparison preview"></iframe>
+        </div>
+        <div class="compare-panel" id="panel-right">
+          <iframe src="./proposals/01-hero-lab/preview.html" title="Right comparison preview"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="preview-modal" id="preview-modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <div class="modal-title">
+          <span class="modal-number" id="modal-number">01</span>
+          <h2 class="modal-name" id="modal-name">Hero Lab</h2>
+        </div>
+        <button class="modal-close" aria-label="Close preview">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </header>
+      <div class="modal-frame">
+        <iframe id="modal-iframe" src="" title="Full preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const views = {
+      grid: document.getElementById('view-grid'),
+      compare: document.getElementById('view-compare')
+    };
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const viewName = btn.dataset.view;
+
+        navButtons.forEach(b => b.setAttribute('aria-current', 'false'));
+        btn.setAttribute('aria-current', 'true');
+
+        Object.entries(views).forEach(([name, el]) => {
+          el.hidden = name !== viewName;
+        });
+      });
+    });
+
+    const modal = document.getElementById('preview-modal');
+    const modalIframe = document.getElementById('modal-iframe');
+    const modalNumber = document.getElementById('modal-number');
+    const modalName = document.getElementById('modal-name');
+    const modalClose = document.querySelector('.modal-close');
+    const modalBackdrop = document.querySelector('.modal-backdrop');
+
+    function openModal(proposalId) {
+      const card = document.querySelector(`[data-proposal="${proposalId}"]`);
+      const number = card.querySelector('.card-number').textContent;
+      const name = card.querySelector('.card-name').textContent;
+
+      modalNumber.textContent = number;
+      modalName.textContent = name;
+      modalIframe.src = `./proposals/${proposalId}/preview.html`;
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      modalIframe.src = '';
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.proposal-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal(card.dataset.proposal);
+      });
+    });
+
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    const leftSelect = document.getElementById('compare-left');
+    const rightSelect = document.getElementById('compare-right');
+    const leftPanel = document.querySelector('#panel-left iframe');
+    const rightPanel = document.querySelector('#panel-right iframe');
+
+    function updateComparePanel(select, panel) {
+      const value = select.value;
+      if (value) panel.src = `./proposals/${value}/preview.html`;
+    }
+
+    leftSelect.addEventListener('change', () => updateComparePanel(leftSelect, leftPanel));
+    rightSelect.addEventListener('change', () => updateComparePanel(rightSelect, rightPanel));
+  </script>
+</body>
+</html>
+
