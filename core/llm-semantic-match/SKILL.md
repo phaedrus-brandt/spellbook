@@ -1,6 +1,10 @@
 ---
 name: llm-semantic-match
-description: Use LLM sub-calls to resolve user intent to one item from a finite set. Replace all fuzzy/substring string matching in agent tools with this pattern.
+user-invocable: false
+description: |
+  Use LLM sub-calls to resolve user intent to one item from a finite set.
+  Replace all fuzzy/substring string matching in agent tools with this pattern.
+  Keywords: semantic matching, intent resolution, fuzzy match, tool lookup, entity resolution.
 ---
 
 # LLM-as-Semantic-Matcher
