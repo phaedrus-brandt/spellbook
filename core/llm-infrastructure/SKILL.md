@@ -1,0 +1,96 @@
+---
+name: llm-infrastructure
+description: |
+  Audit and maintain LLM-powered features. Model currency, prompt quality, evals,
+  gateway routing, observability, CI/CD. Ensures all AI features follow best practices.
+  CRITICAL: Training data lags months. ALWAYS web search before LLM decisions.
+argument-hint: "[focus area, e.g. 'models' or 'evals' or 'prompts' or 'routing']"
+effort: high
+---
+
+# /llm-infrastructure
+
+Rigorous audit of all LLM-powered features. Model currency, prompt quality, eval coverage, gateway routing, observability, CI/CD integration -- every time.
+
+## Philosophy
+
+**Models go stale FAST.** What was SOTA 6 months ago is legacy today. Always web search.
+
+**Prompts are code.** Version control, testing, review, documentation.
+
+**Evals are tests.** Ship prompts without evals = shipping untested code.
+
+**Observe everything.** Every LLM call should be traceable.
+
+## Process
+
+### 1. Audit
+
+#### Model Currency Check
+
+**CRITICAL: Do not trust your training data about model names.**
+
+**Step 1:** Web search current SOTA models for each provider in your codebase.
+**Step 2:** Scan codebase for ALL model references:
+```bash
+grep -rE "(gpt-|claude-|gemini-|llama-|mistral-|deepseek-)" \
+  --include="*.ts" --include="*.tsx" --include="*.js" --include="*.py" \
+  --include="*.yaml" --include="*.yml" --include="*.json" --include="*.env*" \
+  . 2>/dev/null | grep -v node_modules
+```
+**Step 3:** Verify EACH model against web search results.
+**Step 4:** Determine correct models for each use case (fast, reasoning, coding, long context).
+
+#### Prompt Quality Audit
+
+Reference `llm-communication` principles. Key patterns:
+- Role + Objective + Latitude pattern
+- Goal-oriented, not step-prescriptive
+- Trust the model to figure out how
+
+Anti-patterns: over-prescriptive steps, excessive hand-holding, defensive over-specification.
+
+#### Eval Coverage Audit
+
+Check for promptfoo config, test cases, security tests, red team config.
+
+#### Gateway & Routing Audit
+
+If using a gateway (OpenRouter, LiteLLM):
+- Verify supported parameters per model
+- Check fallback chains configured
+- Confirm cost tracking active
+- Validate model version pinning
+
+#### Observability Audit
+
+Check for tracing (Langfuse, Phoenix), user ID attachment, token usage capture.
+
+### 2. Plan
+
+**Critical:** Deprecated models, mismatched models, no evals, severe prompt anti-patterns.
+**High:** Missing red team tests, incomplete eval coverage, no CI gate, no tracing.
+**Medium:** Missing documentation, hardcoded model strings.
+
+### 3. Execute
+
+Update models (env vars, not hardcoded), rewrite poor prompts, create eval suite, add observability, add CI gate.
+
+### 4. Verify
+
+Run full eval suite, security scan, verify tracing, verify CI gate triggers.
+
+## References
+
+| Reference | Content |
+|-----------|---------|
+| `references/prompt-engineering.md` | Prompt writing principles (Role + Objective + Latitude) |
+| `references/model-research-required.md` | Why you must web search before model decisions |
+| `references/model-selection.md` | Model selection guidance |
+| `references/architecture-patterns.md` | LLM architecture patterns |
+| `references/production-checklist.md` | Production readiness checklist |
+| `references/prompt-audit-checklist.md` | Prompt quality checklist |
+| `references/alternatives.md` | Tool comparison (Promptfoo, Braintrust, etc.) |
+| `references/evaluation.md` | Promptfoo setup, assertions, CI/CD, red teaming |
+| `references/gateway-routing.md` | OpenRouter, LiteLLM, routing strategies |
+| `references/llm-communication.md` | Writing effective prompts and agent instructions |

@@ -1,224 +1,161 @@
-# Claude Skills
+# Agent Skills
 
-Unix philosophy: small composable primitives + thin orchestration.
+74 deep skills for AI coding agents. Works with Claude Code, Codex, Gemini, Factory, and Pi.
 
-## Core Delivery Pipeline
+Skills are pure Markdown — no application code, no dependencies. They teach agents *how to work*: debugging methodology, PR workflows, design systems, incident response, and dozens of domain-specific playbooks.
 
-The primary workflow from backlog to merged PR.
+## Why
 
-```
-/groom  →  /shape (ad hoc)  →  /autopilot  →  /pr-fix  →  /pr-polish  →  merge
- explore     product + tech        build        unblock      elevate
- brainstorm  exploration
- synthesize  in one session
-```
+AI agents are only as good as their instructions. Generic prompts produce generic work. These skills encode opinionated, battle-tested workflows that turn agents into effective teammates.
 
-`/groom` produces a prioritized backlog. `/shape` handles ad hoc ideas between groom sessions. Both produce issues ready for `/autopilot`. `/spec` and `/architect` work as standalone primitives or as components of `/shape` and `/autopilot`.
+**The budget problem:** Claude Code allocates ~16K chars for skill descriptions. Naive skill libraries overflow this budget and most skills get silently dropped. This repo solves it with three invocation modes:
 
-### `/groom` — Explore and plan the work
+| Mode | Triggered by | Budget cost |
+|------|-------------|-------------|
+| **Model+User** | Agent decides or user invokes | Consumes budget |
+| **Reference** | Auto-loaded when relevant | Consumes budget |
+| **DMI** | User only (`/command`) | **Free** |
 
-Interactive backlog grooming. Explores the product landscape with the user: loads vision, captures observations, runs domain auditors, synthesizes findings into strategic themes, brainstorms approaches per theme with the user, then creates prioritized issues from agreed directions.
+Current split: 12 model-invocable + 14 references + 48 DMI = 74 total. Budget usage: 45%.
 
-**Phases:** Context → Discovery → Exploration Loop → Synthesis
+## Quick Start
 
-**Composes:** 11 `check-*` skills (audit), 11 `log-*` skills (issues), Gemini, Codex, Thinktank.
+```bash
+git clone https://github.com/phrazzld/agent-skills.git
+cd agent-skills
 
-**Output:** Prioritized GitHub issues (P0-P3) with labels, milestones, and org project links.
+# Sync to your agent harness
+./scripts/sync.sh claude    # → ~/.claude/skills/
+./scripts/sync.sh codex     # → ~/.codex/skills/
+./scripts/sync.sh all       # All harnesses
 
-### `/shape` — Shape a single idea
+# Preview without changes
+./scripts/sync.sh claude --dry-run
 
-Full interactive planning for one idea. Product AND technical thinking in one session. Named after Basecamp's Shape Up. Creates issue(s) with both product spec and technical design.
-
-**Phases:** Understand → Product Exploration (`/spec`) → Technical Exploration (`/architect`) → Synthesis
-
-**Key feature:** Technical constraints can revisit product decisions and vice versa.
-
-**Output:** Implementation-ready issue(s) with spec + design, labeled `status/ready`.
-
-### `/autopilot` — Build the work
-
-From issue to PR in one command. Picks highest-priority issue, specs it (`/spec`), designs it (`/architect`), builds it (`/build`), refines it (`/refactor`, `/update-docs`), and ships it (`/pr`).
-
-**Composes:** `/spec` → `/architect` → `/build` → `/refactor` → `/update-docs` → `/pr`
-
-**Output:** Draft PR with tests passing, linked to issue.
-
-### `/pr-fix` — Unblock the PR
-
-One command takes a blocked PR to green. Resolves merge conflicts (semantic, not mechanical), fixes CI failures, addresses review feedback with full transparency.
-
-**Composes:** `git-mastery` conflict resolution → `/fix-ci` → `/respond` → `/address-review`
-
-**Output:** No conflicts, CI green, reviews addressed/deferred/declined.
-
-### `/pr-polish` — Elevate the PR
-
-Holistic quality pass for a PR that already works. Starts with hindsight analysis ("would we build it the same way?"), then refactors, audits tests, updates docs, and runs quality gates.
-
-**Composes:** `hindsight-reviewer` agent → `/refactor` → test audit → `/update-docs` → `/check-quality` → `/distill`
-
-**Output:** Cleaner architecture, better tests, current docs, codified learnings.
-
-### Pipeline Usage
-
-Run individually or chain:
-
-```
-/groom                    # Interactive backlog session
-/shape "new feature idea" # Shape one idea: product + technical
-/autopilot 42             # Build issue #42
-/pr-fix                   # Unblock if stuck
-/pr-polish                # Elevate before merge
+# Remove stale symlinks after updates
+./scripts/sync.sh --prune all
 ```
 
-`/pr-polish` has a precondition gate — if the PR has conflicts, red CI, or unaddressed reviews, it redirects to `/pr-fix`.
+Skills are symlinked, not copied. Edit once, every harness sees the change.
 
-## Supporting Delivery Skills
+## Skills
 
-Skills invoked by the pipeline or used standalone.
+### Delivery Pipeline
 
-### Planning & Design
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/groom` | DMI | Backlog grooming, health checks, hygiene |
+| `/shape` | DMI | Product + technical planning (absorbs spec, architect, brainstorming) |
+| `/autopilot` | Model+User | Autonomous delivery: shape → build → commit → PR |
+| `/build` | Model+User | Implementation with TDD workflow |
+| `/commit` | DMI | Semantic commits with quality gates |
+| `/pr` | DMI | PR creation with mandatory sections |
+| `/pr-fix` | Model+User | Unblock PRs: conflicts, CI, review feedback, refactoring |
+| `/pr-polish` | Model+User | Hindsight review and quality elevation |
 
-| Skill | Purpose | Invoked By |
-|-------|---------|------------|
-| `/spec` | Interactive product exploration (dual mode) | `/autopilot`, `/shape`, standalone |
-| `/architect` | Interactive technical exploration (dual mode) | `/autopilot`, `/shape`, standalone |
-| `/shape` | Product + technical planning in one session | standalone |
-| `/build` | Implementation with Codex | `/autopilot` |
-| `/critique` | Adversarial review | `/spec`, `/architect`, standalone |
+### Quality & Debugging
 
-### Code Quality
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/check-quality` | DMI | Audit quality gates: tests, CI, hooks |
+| `/debug` | Model+User | Four-phase systematic debugging |
+| `/test-coverage` | DMI | TDD workflow, Vitest config, coverage audit |
+| `/done` | DMI | Session retrospective and codification |
+| `/triage` | Model+User | Incident response → postmortem → verification |
 
-| Skill | Purpose | Invoked By |
-|-------|---------|------------|
-| `/review-branch` | ~12 parallel AI reviewers | `/review-and-fix` |
-| `/review-and-fix` | Review → fix → quality → PR | standalone |
-| `/refactor` | Two-pass code improvement | `/autopilot`, `/pr-polish` |
-| `/check-quality` | Quality gate verification | `/pr-polish` |
+### Audit / Fix / Log
 
-### PR Lifecycle
+Three unified skills replace 36 domain-specific check/fix/log skills:
 
-| Skill | Purpose | Invoked By |
-|-------|---------|------------|
-| `/pr` | Create draft PR from branch | `/autopilot` |
-| `/respond` | Categorize review feedback | `/pr-fix` |
-| `/address-review` | TDD fixes for review findings | `/pr-fix` |
-| `/fix-ci` | Classify + fix CI failures | `/pr-fix` |
-| `/commit` | Semantic commits + push | standalone |
+```bash
+/audit stripe           # Audit any domain
+/fix docs               # Fix issues (model-invocable for autonomous work)
+/log-issues production  # Create GitHub issues from findings
+```
 
-### Documentation
+Domains: bitcoin, btcpay, bun, docs, landing, lightning, observability, onboarding, payments, posthog, product-standards, production, stripe, virality.
 
-| Skill | Purpose | Invoked By |
-|-------|---------|------------|
-| `/update-docs` | ADRs, diagrams, READMEs | `/autopilot`, `/pr-polish` |
-| `/distill` | Codify learnings to skills/hooks | `/pr-polish` |
+### Design & Brand
 
-### Incident Response
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/design` | Model+User | Full design system: tokens, exploration, Vercel patterns |
+| `/brand` | DMI | Brand-as-code: discovery → tokens → assets → video |
+| `/content` | DMI | Write, edit, explore, publish, humanize |
+| `/growth` | DMI | Marketing, SEO, CRO, analytics, pricing |
 
-| Skill | Purpose |
-|-------|---------|
-| `/investigate` | Debug production issues |
-| `/triage` | Multi-source observability check |
-| `/postmortem` | Blameless analysis |
-| `/incident-response` | Full incident lifecycle |
-| `/verify-fix` | Confirm fix with observables |
+### Payments & Infrastructure
 
-## Domain Orchestrators
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/stripe` | DMI | Complete Stripe lifecycle management |
+| `/changelog` | DMI | Changelog infrastructure and automation |
+| `/security-scan` | DMI | Whole-codebase vulnerability analysis |
+| `/sysadmin` | DMI | System health checks |
+| `database` | Reference | Schema design, migrations, Convex patterns |
 
-Each composes domain-specific primitives.
+### AI & Media
 
-| Skill | Domain | Primitives |
-|-------|--------|------------|
-| `/stripe` | Payments | audit, health, configure, verify, reconcile, scaffold |
-| `/changelog` | Releases | audit, setup, page, automation |
-| `/observability` | Monitoring | sentry, verify-fix, triage |
-| `/documentation` | Docs | standards, update-docs |
-| `/virality` | Growth | sharing, referrals, OG images |
-| `/cro` | Conversion | form, page, signup, onboarding, paywall |
-| `/social-content` | Marketing | post, announce, copywriting |
-| `/llm-infrastructure` | LLM ops | evaluation, gateway-routing |
-| `/quality-gates` | CI/CD | testing-philosophy, code-quality |
-| `/brand-pipeline` | Brand | brand-init → brand-compile → brand-assets |
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/llm-infrastructure` | Model+User | LLM evaluation, gateway routing, prompt ops |
+| `/ai-media` | DMI | Image/video generation (FLUX, Veo, Remotion, etc.) |
 
-## Check / Log / Fix Pattern
+### Browser & QA
 
-Three-tier pattern for each domain. Check audits, Log creates issues, Fix resolves them.
+| Skill | Mode | Description |
+|-------|------|-------------|
+| `/agent-browser` | Model+User | Playwright CLI for AI agents |
+| `/dogfood` | DMI | Exploratory QA with repro evidence |
+| `/visual-qa` | Model+User | Pre-commit visual regression |
+| `/flywheel-qa` | DMI | PR verification on preview deploys |
+| `webapp-testing` | Reference | Playwright test patterns |
 
-| Domain | Check | Log | Fix |
-|--------|-------|-----|-----|
-| Production | `/check-production` | `/log-production-issues` | `/triage` |
-| Quality | `/check-quality` | `/log-quality-issues` | `/fix-quality` |
-| Docs | `/check-docs` | `/log-doc-issues` | `/fix-docs` |
-| Observability | `/check-observability` | `/log-observability-issues` | `/fix-observability` |
-| Stripe | `/check-stripe` | `/log-stripe-issues` | `/fix-stripe` |
-| Bitcoin | `/check-bitcoin` | `/log-bitcoin-issues` | `/fix-bitcoin` |
-| Lightning | `/check-lightning` | `/log-lightning-issues` | `/fix-lightning` |
-| Virality | `/check-virality` | `/log-virality-issues` | `/fix-virality` |
-| Landing | `/check-landing` | `/log-landing-issues` | `/fix-landing` |
-| Onboarding | `/check-onboarding` | `/log-onboarding-issues` | `/fix-onboarding` |
+### References (auto-loaded)
 
-`/groom` runs all `log-*` skills. Individual `check-*` and `fix-*` for targeted work.
+`git-mastery` · `naming-conventions` · `external-integration-patterns` · `ui-skills` · `business-model-preferences` · `toolchain-preferences` · `distill` · `next-patterns` · `database` · `delegate` · `cli-reference` · `ralph-patterns` · `skill-builder` · `agentic-ui-contract`
 
-## References
+### Domain Tools (DMI)
 
-Auto-loaded for context. Not in `/` menu. Set `user-invocable: false`.
+`bitcoin` · `lightning` · `posthog` · `bun` · `observability` · `stripe` · `crypto-gains` · `tax-check` · `finances-*` · `moneta-*` · `pencil-*` · `thinktank` · `tune-repo` · `guardrail` · `issue` · `og-hero-image` · `audit-website` · `visualize` · `agent-tools` · scaffolds (`mobile-migrate`, `monorepo-scaffold`, `slack-app-scaffold`, `github-app-scaffold`)
 
-| Skill | Purpose |
-|-------|---------|
-| `git-mastery` | Git workflow, commit conventions, conflict resolution |
-| `testing-philosophy` | Test behavior not implementation |
-| `naming-conventions` | Intention-revealing names |
-| `documentation-standards` | Comment why not what |
-| `external-integration-patterns` | External service integration |
-| `ui-skills` | Interface constraints |
-| `business-model-preferences` | Pricing philosophy |
-| `toolchain-preferences` | Stack defaults (pnpm, Next.js, etc.) |
-| `design-tokens` | Tailwind @theme patterns |
+## Anatomy of a Skill
 
-## Language-Specific
+```
+core/debug/
+├── SKILL.md              # Frontmatter + skill definition
+└── references/
+    ├── investigation.md   # Absorbed from /investigate
+    └── systematic.md      # Absorbed from /systematic-debugging
+```
 
-Reference-style but remain invocable for explicit use.
+`SKILL.md` frontmatter:
 
-| Skill | Language |
-|-------|----------|
-| `typescript-excellence` | TypeScript best practices |
-| `python-standards` | Modern Python with uv, ruff |
-| `go-idioms` | Idiomatic Go patterns |
-| `rust-patterns` | Ownership, errors, traits |
-| `ruby-conventions` | Rails services, testing |
-| `csharp-modern` | .NET 8+ patterns |
+```yaml
+---
+name: debug
+description: |
+  Investigate local development issues: test failures, type errors,
+  runtime bugs, build problems. Use when something is broken and you
+  need to find the root cause. Not for production incidents (use /triage).
+effort: high
+---
+```
 
-## Skill Types
+## Adding a Skill
 
-| Type | Frontmatter | Who Invokes | Examples |
-|------|-------------|-------------|----------|
-| **Reference** | `user-invocable: false` | Claude auto-loads | git-mastery, testing-philosophy |
-| **Primitive** | (default) | Model + user | stripe-audit, spec, fix-ci |
-| **Orchestrator** | (default) | Model + user | /stripe, /autopilot, /groom |
-| **Top-level Workflow** | `disable-model-invocation: true` | User only | /audit |
-
-## Adding Skills
-
-1. **Create directory:** `skills/{name}/SKILL.md`
-2. **Add frontmatter:** name, description, effort level
-3. **Follow pattern:** Look at existing skills in same category
-4. **Declare effort:** `max` / `high` / `medium` / `low`
+1. Create `core/{name}/SKILL.md` with frontmatter
+2. Choose mode: default (model+user), `disable-model-invocation: true` (DMI), or `user-invocable: false` (reference)
+3. Set effort: `low` (lookup) · `medium` (scaffold) · `high` (implement) · `max` (architecture)
+4. Run `./scripts/sync.sh all`
 
 ## Principles
 
-1. **Deep modules** — Hide significant complexity behind simple interfaces
-2. **Compose, don't duplicate** — Orchestrators call primitives
-3. **Model-invocable by default** — Only restrict when necessary
-4. **References auto-load** — No need to invoke explicitly
+- **Deep modules** — hide complexity behind simple interfaces
+- **Compose, don't duplicate** — orchestrators call primitives
+- **Budget-aware** — use DMI for user-only workflows
+- **Agent-agnostic** — works across Claude, Codex, Gemini, Pi
 
----
+## License
 
-## Planning Skill Selection
-
-| Situation | Skill |
-|-----------|-------|
-| Full backlog session, many issues | `/groom` |
-| Just need a product spec | `/spec` |
-| Just need a technical design | `/architect` |
-| Full planning for one idea: product + technical | `/shape` |
-| Autonomous build from issue to PR | `/autopilot` |
+MIT

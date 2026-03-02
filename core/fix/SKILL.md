@@ -1,0 +1,99 @@
+---
+name: fix
+description: |
+  Audit a domain then fix the highest priority issue. Handles: stripe, bitcoin,
+  lightning, btcpay, docs, landing, observability, onboarding, posthog, production,
+  bun, virality. One fix per invocation. Run again for next issue.
+  Use for: bug fixes, domain issues, error resolution, compliance fixes.
+argument-hint: "<domain|error>"
+effort: high
+---
+
+# /fix
+
+Audit. Fix. Verify. One issue at a time.
+
+## Usage
+
+```
+/fix stripe          # Audit Stripe, fix top issue
+/fix docs            # Audit docs, fix top gap
+/fix bitcoin         # Audit Bitcoin, fix top issue
+/fix <error msg>     # Diagnose and fix an arbitrary error
+```
+
+## Domains
+
+bitcoin, btcpay, bun, docs, landing, lightning, observability, onboarding,
+payments, posthog, product-standards, production, stripe, virality
+
+## Process
+
+### Domain Fix (argument matches a domain)
+
+1. **Audit** -- Read `audit/references/{domain}-checklist.md`, run all checks
+2. **Prioritize** -- Identify highest priority (P0 first) failing check
+3. **Fix** -- Apply the fix for that one issue
+4. **Verify** -- Re-run the failing check to confirm resolution
+5. **Report** -- Output what was fixed and what remains
+
+Fix priority order: P0 > P1 > P2 > P3. One fix per invocation.
+
+### Error Fix (argument is an error message / stack trace)
+
+1. **Diagnose** -- Read the full error, locate source, understand context
+2. **Research** -- Find similar issues, check docs for idiomatic solution
+3. **Root cause** -- Ask: "Are we solving the root problem or treating a symptom?"
+4. **Fix** -- Apply minimal fix addressing root cause
+5. **Verify** -- Run tests: `pnpm test && pnpm typecheck`
+6. **Commit** -- `fix: description`
+
+### Domain-Specific Fix Guides
+
+#### Bitcoin
+- Node not synced: check sync status, restart if needed
+- Wallet not encrypted: `bitcoin-cli encryptwallet`
+- UTXO consolidation: create consolidation tx
+
+#### Lightning
+- Inactive channels: rebalance or close/reopen
+- Liquidity imbalance: loop out/in or open new channels
+- Stuck channels: force close if necessary
+
+#### Stripe
+- Missing webhook secret: configure STRIPE_WEBHOOK_SECRET
+- No signature verification: add `stripe.webhooks.constructEvent`
+- Hardcoded keys: move to env vars
+
+#### Docs
+- Missing README: scaffold with project info
+- Missing .env.example: extract from codebase env var usage
+- Stale docs: update with current state
+
+#### Observability
+- No Sentry: install SDK, configure client/server/edge
+- Silent error boundaries: add `captureException`
+- No health endpoint: create `/api/health`
+
+#### Landing
+- No landing page: scaffold marketing page
+- No CTA: add primary call-to-action
+- No OG tags: add metadata
+
+#### Bun
+- Mixed lockfiles: remove non-Bun lockfile
+- CI not updated: switch to `oven-sh/setup-bun`
+- Scripts using `node`: update to `bun`
+
+## Output
+
+```
+Fixed: [P0] Webhook signature not verified
+Remaining: P0: 0 | P1: 2 | P2: 3 | P3: 1
+Run /fix stripe again for next issue.
+```
+
+## Related
+
+- `/audit <domain>` -- Full audit without fixing
+- `/log-issues <domain>` -- Create issues instead of fixing

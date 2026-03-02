@@ -2,26 +2,33 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+CORE_DIR="$REPO_DIR/core"
+PACKS_DIR="$REPO_DIR/packs"
 
 usage() {
-  echo "Usage: sync.sh <harness> [--dry-run]"
-  echo "Harnesses: claude | codex | factory | gemini | pi | all"
+  echo "Usage: sync.sh <command> [options]"
+  echo ""
+  echo "Commands:"
+  echo "  claude | codex | factory | gemini | pi | all   Sync core skills"
+  echo "  pack <name> <project-dir>                      Symlink pack into project"
+  echo "  pack <name> --global                            Symlink pack globally"
+  echo "  --prune <harness>                               Remove stale symlinks"
+  echo ""
+  echo "Options:"
+  echo "  --dry-run    Preview without changes"
   exit 1
 }
 
 [[ $# -lt 1 ]] && usage
 
-HARNESS="$1"
-DRY_RUN="${2:-}"
-
 log() { echo "[sync] $*"; }
-dry() { [[ "$DRY_RUN" == "--dry-run" ]]; }
+dry() { [[ "${DRY_RUN:-}" == "--dry-run" ]]; }
 
-# Symlink a single skill dir from repo into target dir.
-# Backs up existing non-symlink dirs to .bak/
+# Symlink a single skill dir into target dir.
 link_skill() {
-  local skill_name="$1" target_dir="$2"
-  local src="$REPO_DIR/$skill_name"
+  local src="$1" target_dir="$2"
+  local skill_name
+  skill_name="$(basename "$src")"
   local dst="$target_dir/$skill_name"
 
   [[ ! -d "$src" ]] && return
@@ -32,20 +39,16 @@ link_skill() {
     if [[ "$current" == "$src" ]]; then
       return  # already correct
     fi
-    # Remove stale symlink
     if dry; then
-      log "[dry] rm symlink $dst -> $current"
+      log "[dry] repoint $dst -> $src"
     else
       rm "$dst"
     fi
   elif [[ -d "$dst" ]]; then
-    # Back up existing real directory
-    local backup_dir="$target_dir/.bak"
     if dry; then
-      log "[dry] backup $dst -> $backup_dir/$skill_name"
+      log "[dry] replace dir $dst with symlink"
     else
-      mkdir -p "$backup_dir"
-      mv "$dst" "$backup_dir/$skill_name"
+      /usr/bin/trash "$dst" 2>/dev/null || rm -rf "$dst"
     fi
   fi
 
@@ -56,7 +59,29 @@ link_skill() {
   fi
 }
 
-# Sync all skills from repo into a target directory.
+# Remove symlinks pointing to deleted skills
+prune_harness() {
+  local target_dir="$1"
+  [[ ! -d "$target_dir" ]] && { log "SKIP: $target_dir does not exist"; return; }
+
+  local count=0
+  for link in "$target_dir"/*; do
+    [[ ! -L "$link" ]] && continue
+    local target
+    target="$(readlink "$link")"
+    if [[ ! -d "$target" ]]; then
+      if dry; then
+        log "[dry] prune stale: $link -> $target"
+      else
+        rm "$link"
+      fi
+      ((count++))
+    fi
+  done
+  log "$target_dir: pruned $count stale symlinks"
+}
+
+# Sync all core skills into a target directory.
 # $1 = target dir, $2... = skip patterns (optional)
 sync_harness() {
   local target_dir="$1"
@@ -65,15 +90,13 @@ sync_harness() {
 
   [[ ! -d "$target_dir" ]] && { log "SKIP: $target_dir does not exist"; return; }
 
+  # Prune stale symlinks first
+  prune_harness "$target_dir"
+
   local count=0
-  for skill_dir in "$REPO_DIR"/*/; do
+  for skill_dir in "$CORE_DIR"/*/; do
     local skill_name
     skill_name="$(basename "$skill_dir")"
-
-    # Skip non-skill dirs
-    [[ "$skill_name" == "scripts" ]] && continue
-    [[ "$skill_name" == ".git" ]] && continue
-    [[ "$skill_name" == ".bak" ]] && continue
 
     # Skip protected patterns
     local skip=false
@@ -82,7 +105,7 @@ sync_harness() {
     done
     $skip && continue
 
-    link_skill "$skill_name" "$target_dir"
+    link_skill "$CORE_DIR/$skill_name" "$target_dir"
     ((count++))
   done
 
@@ -98,10 +121,36 @@ sync_specific() {
   [[ ! -d "$target_dir" ]] && { log "SKIP: $target_dir does not exist"; return; }
 
   for skill_name in "${skills[@]}"; do
-    link_skill "$skill_name" "$target_dir"
+    link_skill "$CORE_DIR/$skill_name" "$target_dir"
   done
 
   log "$target_dir: ${#skills[@]} shared skills synced"
+}
+
+# Sync a pack into a project or globally
+sync_pack() {
+  local pack_name="$1"
+  local target="$2"
+  local pack_dir="$PACKS_DIR/$pack_name"
+
+  [[ ! -d "$pack_dir" ]] && { log "ERROR: pack '$pack_name' not found in $PACKS_DIR"; exit 1; }
+
+  local target_dir
+  if [[ "$target" == "--global" ]]; then
+    target_dir="$HOME/.claude/skills"
+  else
+    target_dir="$target/.claude/skills"
+    mkdir -p "$target_dir"
+  fi
+
+  local count=0
+  for skill_dir in "$pack_dir"/*/; do
+    [[ ! -d "$skill_dir" ]] && continue
+    link_skill "$skill_dir" "$target_dir"
+    ((count++))
+  done
+
+  log "Pack '$pack_name': $count skills synced to $target_dir"
 }
 
 do_claude() {
@@ -130,7 +179,7 @@ do_gemini() {
       [[ ! -L "$link" ]] && continue
       local name
       name="$(basename "$link")"
-      [[ -d "$REPO_DIR/$name" ]] && link_skill "$name" "$ag_dir"
+      [[ -d "$CORE_DIR/$name" ]] && link_skill "$CORE_DIR/$name" "$ag_dir"
     done
     log "$ag_dir: antigravity symlinks repointed"
   fi
@@ -141,20 +190,48 @@ do_pi() {
   # Pi is managed by pi-agent-config. Only repoint shared symlinks.
   local pi_skills="$HOME/Development/pi-agent-config/skills"
   local -a shared_skills=(
-    agent-browser dogfood skill-creator taste-skill
-    vercel-composition-patterns vercel-react-best-practices
-    web-design-guidelines
+    agent-browser dogfood skill-creator design
   )
   sync_specific "$pi_skills" "${shared_skills[@]}"
 }
 
-case "$HARNESS" in
+# Parse arguments
+DRY_RUN=""
+COMMAND="$1"
+shift
+
+# Check for --dry-run in remaining args
+for arg in "$@"; do
+  [[ "$arg" == "--dry-run" ]] && DRY_RUN="--dry-run"
+done
+
+case "$COMMAND" in
   claude)  do_claude ;;
   codex)   do_codex ;;
   factory) do_factory ;;
   gemini)  do_gemini ;;
   pi)      do_pi ;;
   all)     do_claude; do_codex; do_factory; do_gemini; do_pi ;;
+  pack)
+    [[ $# -lt 2 ]] && { echo "Usage: sync.sh pack <name> <project-dir|--global>"; exit 1; }
+    sync_pack "$1" "$2"
+    ;;
+  --prune)
+    HARNESS="${1:-all}"
+    case "$HARNESS" in
+      claude)  prune_harness "$HOME/.claude/skills" ;;
+      codex)   prune_harness "$HOME/.codex/skills" ;;
+      factory) prune_harness "$HOME/.factory/skills" ;;
+      gemini)  prune_harness "$HOME/.gemini/skills" ;;
+      all)
+        prune_harness "$HOME/.claude/skills"
+        prune_harness "$HOME/.codex/skills"
+        prune_harness "$HOME/.factory/skills"
+        prune_harness "$HOME/.gemini/skills"
+        ;;
+      *)       echo "Unknown harness: $HARNESS"; exit 1 ;;
+    esac
+    ;;
   *)       usage ;;
 esac
 
