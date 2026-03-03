@@ -1,10 +1,9 @@
 ---
 name: fix
 description: |
-  Audit a domain then fix the highest priority issue. Handles: stripe, bitcoin,
-  lightning, btcpay, docs, landing, observability, onboarding, posthog, production,
-  bun, virality. One fix per invocation. Run again for next issue.
-  Use for: bug fixes, domain issues, error resolution, compliance fixes.
+  Audit a domain then fix the highest priority issue. Domains discovered
+  dynamically from audit/references/*-checklist.md. One fix per invocation.
+  Run again for next issue. Use for: bug fixes, domain issues, error resolution.
 argument-hint: "<domain|error>"
 ---
 
@@ -23,8 +22,8 @@ Audit. Fix. Verify. One issue at a time.
 
 ## Domains
 
-bitcoin, btcpay, bun, docs, landing, lightning, observability, onboarding,
-payments, posthog, product-standards, production, stripe, virality
+**Dynamic.** Scan `audit/references/*-checklist.md` for available domains.
+Core domains always present; pack domains appear after `sync.sh pack <name>`.
 
 ## Process
 
