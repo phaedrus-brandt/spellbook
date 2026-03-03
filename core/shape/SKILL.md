@@ -95,7 +95,10 @@ Present: "Here's what I understand. Let me explore the problem space."
    [Chosen direction and why]
 
    ### Acceptance Criteria
-   - [ ] Given [precondition], when [action], then [outcome]
+   Tag each AC: `[test]` (assertion in tests), `[command]` (CLI check), `[behavioral]` (observable behavior).
+   - [ ] [test] Given [precondition], when [action], then [expected assertion in tests]
+   - [ ] [command] Given [precondition], when `pnpm test -- --grep "feature-name"`, then [expected output]
+   - [ ] [behavioral] Given [precondition], when [user action], then [observable behavior]
 
    ### User Stories
    - As [persona], I want [action] so that [value]
