@@ -2,7 +2,7 @@
 name: verify-ac
 user-invocable: false
 description: |
-  Machine-verify acceptance criteria against implementation by reading issue AC tags and running per-tag checks.
+  Machine-verify acceptance criteria against implementation by inferring the best verification strategy per AC.
   Use from autopilot/pr-fix/pr-polish when gating commits or PRs against issue acceptance criteria.
 ---
 
@@ -16,31 +16,19 @@ Machine-verifies `## Acceptance Criteria` from a GitHub issue body.
 - Repository root path
 - Optional scope notes (what changed in this diff)
 
-## AC Tag Contract
-
-Every AC line should be checkbox + tag:
-
-```md
-- [ ] [test] Given ..., when ..., then ...
-- [ ] [command] Given ..., when ..., then ...
-- [ ] [behavioral] Given ..., when ..., then ...
-```
-
-If an AC has no known tag, report `SKIPPED` with remediation text.
-
 ## Workflow
 
 1. Read issue body:
    - `gh issue view N --json number,title,body`
 2. Extract AC lines from `## Acceptance Criteria`.
-3. Classify by tag.
+3. Infer verification strategy per AC (`test`, `command`, `behavioral`) using LLM reasoning from AC semantics and diff context.
 4. Verify each AC via strategy table below.
 5. Retry UNVERIFIED checks once (2 total attempts).
 6. Emit report + gate decision.
 
 ## Verification Strategies
 
-### `[test]`
+### `test` (inferred)
 
 - Build query keywords from the AC statement.
 - Search tests only (`**/*test*`, `**/__tests__/**`, `**/*.spec.*`) with `rg`.
@@ -49,9 +37,10 @@ If an AC has no known tag, report `SKIPPED` with remediation text.
   - `VERIFIED` with file:line evidence
   - `UNVERIFIED` when no credible assertion evidence exists
 
-### `[command]`
+### `command` (inferred)
 
-- Parse command and expected result from AC text.
+- If AC contains an explicit executable command, run it.
+- Otherwise, infer the narrowest reproducible command from repo conventions and AC intent.
 - Run command with bounded execution (`timeout` required).
 - Check:
   - exit status
@@ -60,7 +49,7 @@ If an AC has no known tag, report `SKIPPED` with remediation text.
   - `VERIFIED` with command + key output
   - `UNVERIFIED` with exit code/output mismatch
 
-### `[behavioral]`
+### `behavioral` (inferred)
 
 - Spawn an explore-style subagent to trace changed code paths and call sites.
 - Ask for strict verdict with evidence:
@@ -86,10 +75,9 @@ If an AC has no known tag, report `SKIPPED` with remediation text.
 
 ```md
 ## AC Verification Report (#N)
-- ✅ VERIFIED: [test] ... — evidence: path/to/file.test.ts:42
-- ❌ UNVERIFIED: [command] ... — attempt 2/2, exit=1, expected="..."
-- ⚠️ PARTIAL: [behavioral] ... — path exists, edge case coverage unclear
-- ⏭️ SKIPPED: [unknown] ... — unsupported tag
+- ✅ VERIFIED: (test) ... — evidence: path/to/file.test.ts:42
+- ❌ UNVERIFIED: (command) ... — attempt 2/2, exit=1, expected="..."
+- ⚠️ PARTIAL: (behavioral) ... — path exists, edge case coverage unclear
 
 Gate: FAILED
 Reason: 1 AC remained UNVERIFIED after 2 attempts.
