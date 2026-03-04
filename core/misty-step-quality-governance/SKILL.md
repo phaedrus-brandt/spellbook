@@ -31,7 +31,7 @@ Apply Misty Step's machine-first quality baseline without adding required human 
 2. Apply branch/ruleset baseline to all repos (`references/org-baseline.md`).
 3. Enforce deterministic CI gate design (`references/repo-gate-template.md`).
 4. Enforce issue-to-PR intent contract (`references/intent-gating-contract.md`).
-5. Apply Cerberus strategy defaults (`references/cerberus-policy.md`).
+5. Apply reviewer strategy defaults (`references/reviewer-policy.md`).
 
 ## Output
 
@@ -48,7 +48,7 @@ Apply Misty Step's machine-first quality baseline without adding required human 
 - shape/spec/architect: [pass/fail]
 - autopilot/build issue->PR intent link: [pass/fail]
 
-## Cerberus Posture
+## Reviewer Posture
 - config simplicity: [pass/fail]
 - adversarial reviewer stance in prompts: [pass/fail]
 - deterministic gates integrated: [pass/fail]
@@ -59,4 +59,4 @@ Apply Misty Step's machine-first quality baseline without adding required human 
 - `references/org-baseline.md`
 - `references/repo-gate-template.md`
 - `references/intent-gating-contract.md`
-- `references/cerberus-policy.md`
+- `references/reviewer-policy.md`

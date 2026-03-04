@@ -2,8 +2,8 @@
 name: ci-spend-optimizer
 description: |
   Audit and reduce GitHub Actions spend across repositories. Use when minutes are
-  exhausted, CI is noisy/duplicative, or multiple AI reviewers (Cerberus, Claude,
-  Codex, Gemini, CodeRabbit, Greptile) run together. Produces top spend drivers,
+  exhausted, CI is noisy/duplicative, or multiple AI reviewers run together.
+  Produces top spend drivers,
   overlap hotspots, and applies concrete workflow changes with tradeoffs.
 disable-model-invocation: true
 ---
@@ -27,8 +27,9 @@ gh api "/organizations/${ORG}/settings/billing/usage?year=${YEAR}&month=${MONTH}
 - Rank workflow names by total minutes.
 
 3. Detect AI reviewer overlap.
-- Match workflow names for: `cerberus`, `claude`, `codex`, `gemini`, `coderabbit`, `greptile`.
-- Flag repos where Cerberus and another reviewer both run automatically.
+- Match workflow names for a configured keyword set (for example:
+  `claude`, `codex`, `gemini`, `coderabbit`, `greptile`, custom reviewer names).
+- Flag repos where primary and secondary reviewers both run automatically.
 - Estimate overlap minutes and list top offenders.
 
 4. Apply workflow hygiene in each hot repo.
@@ -45,9 +46,9 @@ gh api "/organizations/${ORG}/settings/billing/usage?year=${YEAR}&month=${MONTH}
 - Keep required human approvals at `0` for solo-maintainer repos.
 
 6. Apply AI reviewer arbitration policy.
-- Use one default blocking reviewer per repo (normally Cerberus).
+- Use one default blocking reviewer per repo.
 - Make secondary reviewers opt-in (`issue_comment`, label, or manual dispatch).
-- Escalate to secondary reviewers only on risk signals (Cerberus WARN/FAIL, large diff, sensitive paths).
+- Escalate to secondary reviewers only on risk signals (primary reviewer WARN/FAIL, large diff, sensitive paths).
 - Keep one stable required check name (for example `merge-gate`).
 
 7. Decide runner strategy by workload.
@@ -70,7 +71,7 @@ gh api "/organizations/${ORG}/settings/billing/usage?year=${YEAR}&month=${MONTH}
 - [Top repos/workflows + minutes]
 
 ## Overlap Findings
-- [Repos running Cerberus + other reviewers]
+- [Repos running primary + secondary reviewers]
 
 ## Changes Applied
 - [Per-repo workflow edits]

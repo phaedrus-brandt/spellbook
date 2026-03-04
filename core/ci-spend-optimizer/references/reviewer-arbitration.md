@@ -7,7 +7,7 @@ Reduce duplicate AI review spend while preserving bug-finding depth.
 ## Default policy
 
 1. One auto-run reviewer per PR.
-- Recommended default: Cerberus.
+- Choose one primary reviewer.
 - Keep this check required in branch protection.
 - No required human approvals for solo-maintainer repos.
 
@@ -16,7 +16,7 @@ Reduce duplicate AI review spend while preserving bug-finding depth.
 - Never auto-run all reviewers on every push.
 
 3. Escalate on risk signals.
-- Cerberus verdict is `WARN` or `FAIL`.
+- Primary reviewer verdict is `WARN` or `FAIL`.
 - Changed paths match sensitive patterns (`auth/**`, `billing/**`, `infra/**`, `.github/workflows/**`).
 - Diff size crosses threshold (example: `> 800` lines).
 
