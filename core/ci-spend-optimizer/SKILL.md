@@ -86,4 +86,4 @@ gh api "/organizations/${ORG}/settings/billing/usage?year=${YEAR}&month=${MONTH}
 
 - `references/reviewer-arbitration.md`
 - `references/migration-options.md`
-- `../misty-step-quality-governance/references/org-baseline.md`
+- `../org-quality-governance/references/org-baseline.md`

@@ -49,7 +49,7 @@ grep -q "@vitest/coverage" package.json 2>/dev/null && echo "V Coverage plugin" 
 [ -f ".github/workflows/ci.yml" ] || [ -f ".github/workflows/test.yml" ] && echo "V CI workflow" || echo "X CI workflow"
 grep -rq "vitest-coverage-report" .github/workflows/ 2>/dev/null && echo "V Coverage in PRs" || echo "X Coverage in PRs"
 
-# Misty Step baseline (set OWNER/REPO/BRANCH before running)
+# Baseline policy checks (set OWNER/REPO/BRANCH before running)
 gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_status_checks.contexts | length' 2>/dev/null | awk '{if ($1>0) print "V Required checks"; else print "X Required checks"}'
 gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_pull_request_reviews.required_approving_review_count' 2>/dev/null | awk '{if ($1==0 || $1=="null") print "V No required human approvals"; else print "X Human approvals required"}'
 gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_conversation_resolution.enabled' 2>/dev/null | awk '{if ($1=="true") print "V Conversation resolution required"; else print "X Conversation resolution not required"}'
@@ -179,4 +179,4 @@ Coverage is diagnostic, not a goal. 60% meaningful > 95% testing implementation 
 - `/fix-quality` -- Fix quality infrastructure
 - `/test-coverage` -- Deep test audit with coverage analysis
 - `/ci-spend-optimizer` -- Reduce CI minute burn and AI reviewer overlap
-- `/misty-step-quality-governance` -- Enforce Misty Step org/repo quality policy
+- `/org-quality-governance` -- Enforce organization/repo quality policy

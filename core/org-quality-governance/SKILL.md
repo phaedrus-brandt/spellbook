@@ -1,16 +1,16 @@
 ---
-name: misty-step-quality-governance
+name: org-quality-governance
 description: |
-  Enforce Misty Step quality policy across org and repos: protected default
+  Enforce organization quality policy across org and repos: protected default
   branches, required CI checks, conversation resolution, deterministic gates,
   security defaults (Dependabot + secret scanning + trufflehog), and issue-to-PR
   intent gating. Use when standardizing or auditing CI/CD and reviewer strategy.
 disable-model-invocation: true
 ---
 
-# /misty-step-quality-governance
+# /org-quality-governance
 
-Apply Misty Step's machine-first quality baseline without adding required human reviews.
+Apply a machine-first quality baseline without requiring human PR approvals.
 
 ## Policy Baseline
 

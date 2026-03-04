@@ -15,7 +15,7 @@
 ## Audit commands
 
 ```bash
-ORG=misty-step
+ORG=your-org
 gh api "/orgs/$ORG"
 gh api "/orgs/$ORG/rulesets"
 gh api "/orgs/$ORG/actions/permissions"
@@ -25,7 +25,7 @@ gh api "/orgs/$ORG/actions/permissions/workflow"
 ## Repo branch-protection audit
 
 ```bash
-ORG=misty-step
+ORG=your-org
 for REPO in $(gh repo list "$ORG" --limit 300 --json name -q '.[].name'); do
   BRANCH=$(gh api "/repos/$ORG/$REPO" --jq '.default_branch')
   gh api "/repos/$ORG/$REPO/branches/$BRANCH/protection" >/tmp/prot.json 2>/dev/null || { echo "$REPO no-protection"; continue; }

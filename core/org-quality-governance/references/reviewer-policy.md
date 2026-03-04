@@ -1,4 +1,4 @@
-# Reviewer Policy (Misty Step)
+# Reviewer Policy
 
 ## Product posture
 
