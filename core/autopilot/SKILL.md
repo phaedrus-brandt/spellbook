@@ -55,7 +55,8 @@ Deterministic logic is limited to strict mechanics: schema checks, exact parsing
    - Score 50-69: run `/issue enrich $1` first, then re-lint
    - Score < 50: flag to user, attempt enrichment, re-lint
    - **Never skip an issue because it scored low — YOU make it ready**
-4. **Spec** — Invoke `/shape --spec-only` if no `## Product Spec` section
+4. **Intent gate** — Ensure issue has `## Product Spec` and `### Intent Contract`.
+   If missing, invoke `/shape --spec-only` and re-check before coding.
 5. **Design** — Invoke `/shape --design-only` if no `## Technical Design` section
 6. **Build (TDD Enforced)** — Invoke `/build` and require RED→GREEN evidence per acceptance criterion:
    - RED: failing targeted tests before implementation
@@ -77,6 +78,7 @@ Deterministic logic is limited to strict mechanics: schema checks, exact parsing
     - Read linked issue from branch name or recent commits
     - PR body must contain all sections:
       - **Summary**: What changed and why. Link to issue. `Closes #N`.
+      - **Intent Reference**: Copy/paste issue intent contract summary + link to source issue section.
       - **Changes**: Concise list of what was done. Key files/functions.
       - **Acceptance Criteria**: From linked issue. Checkboxes.
       - **Manual QA**: Step-by-step verification. Commands, expected output.

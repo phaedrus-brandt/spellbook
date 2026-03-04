@@ -19,8 +19,9 @@ Audit quality infrastructure. Fix gaps. Verify everything works.
 3. Audit CI/CD (GitHub Actions, branch protection)
 4. Audit linting/formatting (ESLint, Prettier, Biome)
 5. Security scan via `security-sentinel` agent
-6. Fix identified gaps (install tools, create configs, set up CI)
-7. Verify fixes work end-to-end
+6. Audit branch-protection/security baseline (required checks, conversation resolution, secret scanning)
+7. Fix identified gaps (install tools, create configs, set up CI)
+8. Verify fixes work end-to-end
 
 **This is both audit AND setup.** It checks what exists, fixes what's missing, and proves it works.
 
@@ -48,6 +49,12 @@ grep -q "@vitest/coverage" package.json 2>/dev/null && echo "V Coverage plugin" 
 [ -f ".github/workflows/ci.yml" ] || [ -f ".github/workflows/test.yml" ] && echo "V CI workflow" || echo "X CI workflow"
 grep -rq "vitest-coverage-report" .github/workflows/ 2>/dev/null && echo "V Coverage in PRs" || echo "X Coverage in PRs"
 
+# Misty Step baseline (set OWNER/REPO/BRANCH before running)
+gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_status_checks.contexts | length' 2>/dev/null | awk '{if ($1>0) print "V Required checks"; else print "X Required checks"}'
+gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_pull_request_reviews.required_approving_review_count' 2>/dev/null | awk '{if ($1==0 || $1=="null") print "V No required human approvals"; else print "X Human approvals required"}'
+gh api "/repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --jq '.required_conversation_resolution.enabled' 2>/dev/null | awk '{if ($1=="true") print "V Conversation resolution required"; else print "X Conversation resolution not required"}'
+rg -n "trufflehog|secret|gitleaks" .github/workflows -S >/dev/null 2>&1 && echo "V Secret scan workflow (trufflehog/gitleaks)" || echo "X Secret scan workflow"
+
 # Linting
 [ -f "eslint.config.js" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] && echo "V ESLint" || echo "X ESLint"
 [ -f "biome.json" ] && echo "V Biome" || echo "- Biome"
@@ -72,6 +79,8 @@ Prioritize findings:
 | No test runner | P0 |
 | No CI workflow | P0 |
 | Security vulnerabilities | P0 |
+| Missing required checks on protected branch | P0 |
+| Conversation resolution disabled | P0 |
 | No coverage | P1 |
 | No git hooks | P1 |
 | No linting | P1 |
@@ -169,3 +178,5 @@ Coverage is diagnostic, not a goal. 60% meaningful > 95% testing implementation 
 - `/log-quality-issues` -- Create GitHub issues from findings
 - `/fix-quality` -- Fix quality infrastructure
 - `/test-coverage` -- Deep test audit with coverage analysis
+- `/ci-spend-optimizer` -- Reduce CI minute burn and AI reviewer overlap
+- `/misty-step-quality-governance` -- Enforce Misty Step org/repo quality policy
