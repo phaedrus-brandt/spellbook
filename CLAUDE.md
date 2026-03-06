@@ -6,20 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A unified skills monorepo for multi-model AI agents (Claude, Codex, Gemini, Factory, Pi). Markdown-first, with some TypeScript helper scripts and tests (e.g., `core/web-search/`). Skills are distributed to agent harnesses via symlinks.
 
-**58 core skills** (universal engineering) + **4 domain packs** (19 skills, loaded per-project) + **5 repo-local** (live in their own repos).
+**63 core skills** (universal engineering) + **4 domain packs** (20 skills, loaded per-project) + **5 repo-local** (live in their own repos).
 
 ## Repo Structure
 
 ```
 agent-skills/
-├── core/           # 58 universal skills, synced to ~/.claude/skills/
+├── core/           # 63 universal skills, synced to ~/.claude/skills/
 │   ├── groom/
 │   ├── autopilot/
 │   ├── build/
 │   └── ...
 ├── packs/          # Domain packs, loaded per-project on demand
 │   ├── payments/   # bitcoin, lightning, stripe (3 skills + 5 checklists)
-│   ├── growth/     # brand, content, growth, ai-media, og-hero-image, app-screenshots, audit-website (7 skills + 3 checklists)
+│   ├── growth/     # brand, content, growth, ai-media, og-hero-image, app-screenshots, audit-website, product-marketing-context (8 skills + 3 checklists)
 │   ├── scaffold/   # github-app, slack-app, monorepo, mobile-migrate, bun (5 skills + 1 checklist)
 │   └── finance/    # finances-ingest, finances-report, finances-snapshot, crypto-gains (4 skills)
 ├── scripts/
@@ -99,8 +99,8 @@ Claude Code has a ~16K char description budget. Skills consume budget based on m
 | Reference | `user-invocable: false` | Auto-loaded by model | **Consumes budget** |
 | DMI | `disable-model-invocation: true` | User via `/command` | **Free** |
 
-Current split: ~26 budget-consuming + ~32 DMI = ~58 core total. Well within 16K.
-Pack skills (19) don't consume budget — they're loaded per-project only when needed.
+Current split: ~36 budget-consuming + ~27 DMI = ~63 core total. Well within 16K.
+Pack skills (20) don't consume budget — they're loaded per-project only when needed.
 
 ## Core Delivery Pipeline
 

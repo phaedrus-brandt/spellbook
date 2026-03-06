@@ -76,11 +76,15 @@ Present: "Here's what I understand. Let me explore the problem space."
    - What it enables downstream
 
    **Recommend one.** Lead with recommendation and reasoning.
+   If ideas become polished variants or the room goes flat, invoke `break-the-frame`.
 
 3. **Discuss** — User steers. One question at a time. Multiple choice preferred.
    Iterate until product direction is locked.
 
-4. **Draft spec** — Post on issue:
+4. **Find the cheapest test** — If uncertainty is real, define the fastest cheap
+   experiment that would change the decision. Prefer probes over speculation.
+
+5. **Draft spec** — Post on issue:
 
    ```markdown
    ## Product Spec
@@ -134,7 +138,7 @@ Present: "Here's what I understand. Let me explore the problem space."
 
    | Agent | Focus |
    |-------|-------|
-   | Codebase explorer | Existing patterns, touch points, .glance.md context |
+   | Codebase explorer | Existing patterns, touch points, docs/context + CODEBASE_MAP context |
    | Web researcher | Best practices, framework docs, how others solve this |
    | Cross-repo investigator | Prior art in org repos, shared patterns |
 
@@ -202,6 +206,7 @@ Once both product and technical directions are locked:
 4. **Apply standards** — Labels, milestones, org-wide standards (see `groom/references/org-standards.md`)
 5. **Signal readiness** — `status/ready` for `/build` or `/autopilot`
 6. **Stress-test** — Run critique (see `references/critique-personas.md`) to find gaps
+7. **Prefer probe issues first** — if uncertainty remains high, create a cheap experiment issue before the full build issue
 
 Post spec + design as comments on each issue.
 

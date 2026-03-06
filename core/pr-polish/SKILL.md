@@ -67,6 +67,9 @@ Address hindsight findings using two-pass refinement (see `pr-fix/references/ref
 
 **Pass 2 — Architecture:** Shallow module consolidation, unnecessary abstraction removal, information hiding improvements.
 
+Delete compatibility layers that only exist to preserve agent-added structure.
+Passing tests do not justify bloat.
+
 For architectural findings that require broader changes: create GitHub issues.
 
 ```bash
@@ -178,17 +181,18 @@ gh pr view $PR --json body | jq -r '.body'
 
 Omit only when the change is purely internal with no branching or relationships.
 
-### 8. Refresh Glance Summaries (Conditional)
+### 8. Refresh Context Artifacts (Conditional)
 
 If this PR added, removed, or significantly restructured directories:
 
-```bash
-glance   # run from repo root — skips up-to-date directories automatically
-```
+Refresh the relevant context artifacts if the repo uses them:
 
-Do NOT pass `-force`. Glance handles intelligent regeneration based on existing `.glance.md` files. Only affects directories that changed.
+- `docs/CODEBASE_MAP.md`
+- `docs/context/INDEX.md`
+- `docs/context/ROUTING.md`
+- `docs/context/DRIFT-WATCHLIST.md`
 
-Commit any updated `.glance.md` files with the PR branch.
+Commit any updated context artifacts with the PR branch.
 
 ### 9. Codify (Optional)
 
@@ -205,6 +209,7 @@ Skip if nothing novel surfaced.
 - Leaving missing CI unaddressed when the PR depends on local-only verification
 - Documenting obvious mechanics instead of non-obvious decisions
 - Skipping hindsight and jumping straight to refactoring
+- Preserving unnecessary backward-compat shims in greenfield or pre-user code
 
 ## Output
 

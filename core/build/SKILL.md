@@ -48,18 +48,27 @@ Intent gate before coding:
 
 If on `master`/`main`, branch: `feature/issue-$1` or `fix/issue-$1`.
 
+Before adding new code, read the touched module end-to-end. Do not stack new
+layers on a partial mental model.
+
 ## TDD Gate (MANDATORY)
 
 TDD is enforced, not optional.
 
 For each acceptance-criteria chunk:
-1. Write/adjust test first.
+1. Write/adjust a behavior test first.
 2. Run targeted test command and confirm failure (RED).
 3. Implement minimal code.
 4. Re-run same targeted test and confirm pass (GREEN).
 5. Refactor with tests still green.
 
 Do not write production implementation before at least one relevant failing test exists.
+
+Tests should target module exports, public interfaces, and observable behavior.
+Avoid mock-heavy "unit tests" that pin internal structure.
+Default against backward-compat scaffolding that exists only to keep current
+tests green. In greenfield or low-user systems, delete bad layers instead of
+preserving them.
 
 If tests cannot run (harness/env failure), stop and report blocker. Do not continue implementation unless user explicitly approves bypass.
 
@@ -69,6 +78,8 @@ Before delegating any chunk:
 - Existing tests? Warn: "Don't break tests in [file]"
 - Add or replace? Be explicit
 - Pattern to follow? Include reference file path
+- Boundary to test? State the module export/public behavior explicitly
+- Mocks needed? Only for external boundaries and nondeterminism
 - Quality gates? Include verify command
 
 ## Execution Loop
@@ -76,6 +87,7 @@ Before delegating any chunk:
 For each logical chunk:
 
 1. **Understand** — Read issue/spec, find existing patterns to follow
+   Re-read touched modules before each major chunk if the design shifted.
 2. **Delegate** — Clear spec + pattern reference + verify command
 3. **Review** — capture RED→GREEN evidence + `git diff --stat && pnpm typecheck && pnpm lint && pnpm test`
 4. **Commit** — `feat: description (#$1)` if tests pass

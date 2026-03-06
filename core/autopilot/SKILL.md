@@ -62,20 +62,22 @@ Deterministic logic is limited to strict mechanics: schema checks, exact parsing
    - RED: failing targeted tests before implementation
    - GREEN: same tests passing after implementation
    - If test harness is broken, stop and flag blocker (no implementation without explicit user bypass)
+   - Delete compatibility scaffolding in greenfield/pre-user paths unless a real contract requires it
 7. **Visual QA** — If diff touches frontend files (`app/`, `components/`, `*.css`), run `/visual-qa --fix`. Fix P0/P1 before proceeding.
-8. **Refine** — `/pr-fix --refactor`, update docs inline, then run simplification pass:
-   - Preferred accelerator (if native in current harness): `/simplify`
-   - Portable fallback (required): `ousterhout` agent for module depth review + manual simplification edits
-9. **Dogfood QA** — Run automated QA against local dev server (see Dogfood QA section below).
+8. **Agentic QA** — If diff touches prompts, model routing, tool schemas, or agent instructions, run `/llm-infrastructure` and inspect trace/eval coverage before shipping.
+9. **Refine** — `/pr-fix --refactor`, update docs inline, then run simplification pass:
+    - Preferred accelerator (if native in current harness): `/simplify`
+    - Portable fallback (required): `ousterhout` agent for module depth review + manual simplification edits
+10. **Dogfood QA** — Run automated QA against local dev server (see Dogfood QA section below).
    Iterate until no P0/P1 issues remain. **Do not open a PR until QA passes.**
-10. **Commit** — Create semantic commits for all remaining changes:
+11. **Commit** — Create semantic commits for all remaining changes:
     - Categorize files: commit, gitignore, delete, consolidate
     - Group into logical commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
     - Subject: imperative, lowercase, no period, ~50 chars. Body: why not what.
     - Run quality gates (`lint`, `typecheck`, `test`) before pushing
     - `git fetch origin && git push origin HEAD` (rebase if behind)
     - Never force push. Never push to main without confirmation.
-11. **Ship** — Open a draft PR:
+12. **Ship** — Open a draft PR:
     - Stage and commit any uncommitted changes with semantic message
     - Read linked issue from branch name or recent commits
     - PR body must contain all sections:
@@ -89,7 +91,7 @@ Deterministic logic is limited to strict mechanics: schema checks, exact parsing
       - **Test Coverage**: Specific test files/functions. Note gaps.
     - `gh pr create --draft --assignee phrazzld`
     - Add context comment if notable decisions were made
-12. **Retro** — Append implementation signals to `.groom/retro.md`:
+13. **Retro** — Append implementation signals to `.groom/retro.md`:
     ```
     /retro append --issue $1 --predicted {effort_label} --actual {actual_effort} \
       --scope "{scope_changes}" --blocker "{blockers}" --pattern "{insight}"
@@ -180,3 +182,12 @@ NOT stopping conditions: lacks description, seems big, unclear approach.
 ## Output
 
 Report: issue worked, spec status, design status, TDD evidence (RED/GREEN), commits made, dogfood QA summary (issues found/fixed), PR URL.
+
+## Review Cadence
+
+Agents accrete bloat when they keep extending stale mental models. Before each
+new sprint or major chunk:
+
+- Re-read the touched modules fully
+- Look for compatibility shims added only to preserve old structure
+- Simplify before adding the next layer
