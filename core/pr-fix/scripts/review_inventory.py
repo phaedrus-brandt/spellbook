@@ -48,6 +48,52 @@ def rest_pages(path: str) -> list[dict[str, Any]]:
     return items
 
 
+def thread_comments(owner: str, repo: str, thread_id: str, initial_nodes: list[dict[str, Any]], after: str | None) -> list[dict[str, Any]]:
+    query = """
+query($owner:String!, $repo:String!, $threadId:ID!, $after:String) {
+  repository(owner:$owner, name:$repo) {
+    node(id:$threadId) {
+      ... on PullRequestReviewThread {
+        comments(first:100, after:$after) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            id
+            url
+            body
+            path
+            line
+            author { login }
+          }
+        }
+      }
+    }
+  }
+}
+""".strip()
+    comments = list(initial_nodes)
+    cursor = after
+    while cursor:
+        payload = gh_json(
+            [
+                "api",
+                "graphql",
+                "-f",
+                f"query={query}",
+                "-F",
+                f"owner={owner}",
+                "-F",
+                f"repo={repo}",
+                "-F",
+                f"threadId={thread_id}",
+                "-F",
+                f"after={cursor}",
+            ]
+        )["data"]["repository"]["node"]["comments"]
+        comments.extend(payload["nodes"])
+        cursor = payload["pageInfo"]["endCursor"] if payload["pageInfo"]["hasNextPage"] else None
+    return comments
+
+
 def review_threads(owner: str, repo: str, pr: int) -> list[dict[str, Any]]:
     query = """
 query($owner:String!, $repo:String!, $number:Int!, $after:String) {
@@ -59,7 +105,8 @@ query($owner:String!, $repo:String!, $number:Int!, $after:String) {
           id
           isResolved
           isOutdated
-          comments(first:20) {
+          comments(first:100) {
+            pageInfo { hasNextPage endCursor }
             nodes {
               id
               url
@@ -93,7 +140,17 @@ query($owner:String!, $repo:String!, $number:Int!, $after:String) {
         if after:
             args += ["-F", f"after={after}"]
         payload = gh_json(args)["data"]["repository"]["pullRequest"]["reviewThreads"]
-        threads.extend(payload["nodes"])
+        for thread in payload["nodes"]:
+            page_info = thread["comments"]["pageInfo"]
+            thread["comments"]["nodes"] = thread_comments(
+                owner,
+                repo,
+                thread["id"],
+                thread["comments"]["nodes"],
+                page_info["endCursor"] if page_info["hasNextPage"] else None,
+            )
+            thread["comments"].pop("pageInfo", None)
+            threads.append(thread)
         if not payload["pageInfo"]["hasNextPage"]:
             break
         after = payload["pageInfo"]["endCursor"]
