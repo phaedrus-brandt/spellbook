@@ -9,11 +9,12 @@ exploration into a reduced, coherent backlog.
 
 Reduce the backlog before creating anything new.
 
-Use five buckets:
+Use six buckets:
 - **Keep** — current, high-leverage, aligned with locked themes, scores >= 70
 - **Merge** — overlapping issues collapsed into one canonical issue
 - **Demote** — valid idea, but outside the active window → move to `.groom/BACKLOG.md`
 - **Close** — stale, duplicate, vague, obsolete, or better captured elsewhere
+- **Redundant** — proposes building what an existing platform feature, integration, or CLI already handles. Close with an explanation of the existing solution (e.g., "Sentry already files issues for this", "GitHub Actions handles this natively")
 - **Promote** — idea from `.groom/BACKLOG.md` that now warrants an active issue
 
 Guidance:
