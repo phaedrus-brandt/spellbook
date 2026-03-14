@@ -43,9 +43,7 @@ If stale or missing, recommend `/tune-repo`. Do not block grooming.
 
 ### Step 3: Read Implementation Retrospective
 
-```bash
-find .groom/retro -type f -name '*.md' -print -exec cat {} \; 2>/dev/null || echo "No retro data yet"
-```
+Use Glob to find `.groom/retro/**/*.md`, then Read each file.
 
 Extract:
 - effort calibration
@@ -70,7 +68,7 @@ For each item: clarify once if needed, assign tentative priority, do not create 
 
 ### Step 5: Quick Backlog Audit
 
-Invoke `/backlog` for a health dashboard.
+Run the health dashboard procedure from `references/backlog-health.md`.
 
 Present: "Here's where we stand: X open issues, Y ready for execution, Z need enrichment."
 
