@@ -82,6 +82,20 @@ Find:
 4. What tech stack choices do successful projects in this domain make?
 ```
 
+### Existing Tool / Platform Check
+
+Before preserving any backlog item, ask: **"Does an existing platform feature, integration, or CLI command already solve this?"**
+
+Examples of things that don't need custom code:
+- Error tracking → Sentry already files GitHub issues
+- CI/CD orchestration → GitHub Actions, platform-native workflows
+- Webhook delivery → platform-native webhook support (GitHub, Stripe, etc.)
+- Log aggregation → Fly.io built-in logs, `fly logs`
+- Secret management → platform-native secrets (Fly secrets, GitHub secrets)
+- Deployment → `fly deploy`, `mix release`, platform CLIs
+
+If an existing tool handles it, the backlog item should be closed with a pointer to the existing solution, not kept as planned work.
+
 ### For Codex / Codebase Analysis
 
 ```text

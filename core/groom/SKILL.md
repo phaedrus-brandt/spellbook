@@ -71,6 +71,8 @@ not an archive of every bug, nit, brainstorm, review comment, or screenshot.
 
 **Reference architecture first.** Always search for existing implementations before designing from scratch.
 
+**Platform-native first.** Before keeping any integration issue, verify the target platform doesn't already offer the capability natively.
+
 **Model diversity for architecture.** Use thinktank + CLI agents for diverse perspectives on design decisions.
 
 ## Org-Wide Standards
