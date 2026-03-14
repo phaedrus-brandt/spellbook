@@ -59,10 +59,14 @@ Detect project domain from `project.md` and codebase signals, then invoke releva
 | Payments, subscriptions | `/business-model-preferences` |
 | CLI tools | `/cli-reference` |
 | Context/prompt engineering | `/context-engineering` |
+| State machines, concurrent protocols | `/formal-verify` |
+| Greenfield tech decisions, stack choice | Load `references/toolchain-preferences.md` |
 
 Each skill audits the codebase through its lens. Aggregate findings as architectural concerns.
 
 ## Reference Architecture Search Prompts
+
+When evaluating backend technology for a new module, load `references/toolchain-preferences.md`. Strongly prefer Elixir/OTP for agent orchestration and concurrent services.
 
 ### For Gemini / Web Search
 

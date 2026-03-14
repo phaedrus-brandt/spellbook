@@ -1,9 +1,3 @@
----
-name: toolchain-preferences
-description: "Apply preferred toolchain and technology stack defaults: pnpm, Next.js, TypeScript, Convex, Vercel, Tailwind, shadcn/ui, Zustand, TanStack, Vitest. Use when setting up new projects, choosing dependencies, discussing stack decisions, or evaluating alternatives."
-user-invocable: false
----
-
 # Toolchain Preferences
 
 Default technology stack and tooling choices for new projects.
@@ -65,6 +59,39 @@ Ensures consistent environments across projects and machines.
 - Type-safe full-stack (database → UI)
 
 **Alternative:** tRPC + Prisma for non-real-time apps
+
+### Backend Services & Agent Orchestration: Elixir/OTP
+
+**Why Elixir/OTP:**
+- Supervision trees = fault-tolerant agent pools (automatic restart on crash)
+- Lightweight processes = millions of concurrent agents per node
+- Hot code reload = zero-downtime agent updates
+- Pattern matching + immutability = fewer bugs in state management
+- Built-in distributed computing primitives
+
+**When to use:**
+- Multi-agent orchestration services
+- Concurrent backend services with fault tolerance requirements
+- Webhook processing, queue consumers, long-running jobs
+- Any system needing supervision/lifecycle management
+- Systems where "let it crash" is the right recovery strategy
+
+**When NOT to use:**
+- Simple CRUD APIs (use tRPC + Prisma or Convex)
+- Frontend-heavy apps with minimal backend (use Next.js API routes)
+- Rapid prototyping where team has no Elixir experience
+
+**Version management:**
+```
+# .tool-versions
+erlang 27.2
+elixir 1.18.1
+```
+
+**Reframe decision tree:**
+- Real-time frontend data → Convex
+- Agent orchestration, concurrent services → Elixir/OTP
+- Simple CRUD, API layer → tRPC + Prisma
 
 ### Deployment: Vercel
 
@@ -261,6 +288,10 @@ pnpm add -D vitest @testing-library/react @testing-library/jest-dom
 **Need real-time data?**
 - YES → Convex
 - NO → TanStack Query + API layer (or tRPC)
+
+**Building agent orchestration or concurrent services?**
+- YES → Elixir/OTP
+- NO → Continue to other decisions
 
 **Need complex client state?**
 - YES → Zustand

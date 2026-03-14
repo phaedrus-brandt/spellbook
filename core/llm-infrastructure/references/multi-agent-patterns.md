@@ -154,3 +154,38 @@ Structure agent work as a series of checkpoints:
 
 At each checkpoint: assess progress, cut losses if stuck, escalate if blocked.
 This prevents agents from spinning on dead-end approaches.
+
+## OTP as Agent Runtime
+
+When building multi-agent systems that need production fault tolerance,
+Elixir/OTP maps conceptual patterns to battle-tested primitives:
+
+| Pattern | OTP Implementation |
+|---------|-------------------|
+| Orchestrator-Workers | Supervisor + DynamicSupervisor |
+| Parallelization | Task.async_stream / Task.Supervisor |
+| State Management | GenServer + ETS |
+| Circuit Breaker | GenServer state machine |
+| Rate Limiting | GenServer token bucket |
+| Routing | Pattern matching in message handler |
+| Evaluator-Optimizer | GenServer loop with quality gate |
+| Checkpoint-Based | GenServer with persistent state |
+
+### Why OTP Over Hand-Rolled
+
+- **Supervision trees** give automatic restart with configurable strategies
+  (one_for_one, one_for_all, rest_for_one)
+- **Process isolation** means one agent crashing doesn't take down others
+- **Mailbox-based messaging** naturally implements async communication
+- **ETS tables** provide shared read-heavy state without bottlenecks
+- **Hot code reload** enables zero-downtime agent updates in production
+
+### When to Reach for OTP
+
+- Managing 10+ concurrent long-running agent processes
+- Need fault tolerance (agents that crash and restart cleanly)
+- Rate limiting across multiple agent instances
+- Distributed agent coordination across nodes
+
+When building multi-agent systems, prefer Elixir/OTP over hand-rolled orchestration
+in languages without equivalent concurrency primitives.
