@@ -54,6 +54,20 @@ not an archive of every bug, nit, brainstorm, review comment, or screenshot.
 **Use judgment, not quotas.** The point is coherence and execution bandwidth, not
 hitting an exact issue count.
 
+**Code is a liability.** Every line fights for its life. Prefer deletion over addition.
+
+**Never afraid to break compatibility** for a more elegant design.
+
+**Never afraid of esoteric technology** if it's the best fit.
+
+**Never afraid to throw away code** that's too much complexity for too little value.
+
+**Architecture before issues.** Don't create issues that deepen a broken architecture.
+
+**Reference architecture first.** Always search for existing implementations before designing from scratch.
+
+**Model diversity for architecture.** Use thinktank + CLI agents for diverse perspectives on design decisions.
+
 ## Org-Wide Standards
 
 All issues MUST comply with `groom/references/org-standards.md`.
@@ -63,11 +77,12 @@ Load that file before creating any issues.
 
 Run `/groom` in six phases:
 
-1. **Context** — load or update `project.md`, check repo context freshness, read retro, capture user pain, audit backlog health
-2. **Discovery** — launch parallel lanes and synthesize 3-5 strategic themes
-3. **Research** — do web, cross-repo, and codebase research before scoping
-4. **Exploration** — pitch options, recommend one, discuss, validate, then lock direction
-5. **Synthesis** — reduce the backlog first, then create only missing strategic issues
+1. **Ground** — load or update `project.md`, check repo context freshness, read retro, capture user pain, audit backlog health, compute health metrics (LOC per module, fix-to-feature ratio, test-to-code ratio, backlog size)
+2. **Architecture Critique** — three parallel tracks: reference architecture search, domain skill invocation, multi-model thinktank. See `references/architecture-fitness.md`
+2.5. **Present Options** — synthesize tracks A-C into 2-3 architectural options (incremental to radical), ask user what range of change is acceptable
+3. **Research** — web, cross-repo, and codebase research, scoped to the direction chosen in 2.5
+4. **Exploration** — pitch options, recommend one, discuss, validate with thinktank, then lock direction
+5. **Synthesis** — reduce the backlog first (close issues that deepen the wrong architecture), then create only missing strategic issues
 6. **Artifact** — save a dated grooming plan and visual summary when useful
 
 Synthesis default:
@@ -79,7 +94,8 @@ Synthesis default:
 ## References
 
 ### Workflow
-- `references/interactive-workflow.md` — full Phase 1-4 flow
+- `references/interactive-workflow.md` — full Phase 1-4 flow (includes architecture critique phases)
+- `references/architecture-fitness.md` — health metrics, domain skill routing, reference search prompts, thinktank templates
 - `references/synthesis-workflow.md` — backlog reduction, issue creation, summaries, plan artifact, visual output
 
 ### Standards

@@ -78,6 +78,14 @@ grep -q '"strict": true' tsconfig.json 2>/dev/null && echo "V Strict mode" || ec
 # Design tokens (heuristic only; confirm by reading the theme files)
 rg -n "(@theme|--(color|space|spacing|radius|font|shadow)-|tailwind\\.config|globals\\.css|app\\.css|tokens\\.(ts|js|json)|theme\\.(ts|js)|components/ui|src/components/ui)" . -g '!node_modules' >/dev/null 2>&1 && echo "V Design system detected (heuristic)" || echo "- No obvious design system"
 rg -n "(guardrails/.+(token|theme|color|spacing|radius)|no-raw-(color|hex|spacing|radius)|semantic-token|token-(usage|enforce)|design-token)" . -g '!node_modules' >/dev/null 2>&1 && echo "V Token guardrails (heuristic)" || echo "- No token guardrails"
+
+# Module size (Ousterhout deep module awareness)
+echo "--- Module Size ---"
+for f in $(find . -name '*.ex' -o -name '*.go' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' -o -name '*.py' | grep -v node_modules | grep -v _build | grep -v deps); do
+  lines=$(wc -l < "$f")
+  [ "$lines" -gt 500 ] && echo "! $f: ${lines} LOC (review candidate)"
+done
+echo "---"
 ```
 
 Spawn `security-sentinel` agent for vulnerability analysis.
@@ -102,6 +110,7 @@ Prioritize findings:
 | No coverage in PRs | P2 |
 | No custom guardrails | P2 |
 | Design system without token guardrails | P2 |
+| Module >500 LOC without deep-module justification | P2 |
 | Tool upgrades | P3 |
 
 ### 3. Fix
@@ -188,6 +197,7 @@ Coverage is diagnostic, not a goal. 60% meaningful > 95% testing implementation 
 
 ## References
 
+- `references/module-size-guidance.md` -- LOC thresholds and Ousterhout deep module distinction
 - `references/lefthook-config.md` -- Hook configurations
 - `references/github-actions.md` -- CI workflows
 - `references/vitest-config.md` -- Test configuration

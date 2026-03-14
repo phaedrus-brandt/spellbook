@@ -1,7 +1,7 @@
 # Interactive Workflow
 
-Use this reference for the full interactive `/groom` flow through context,
-discovery, research, and exploration.
+Use this reference for the full interactive `/groom` flow through ground,
+architecture critique, research, and exploration.
 
 ## Phase 1: Context
 
@@ -36,7 +36,7 @@ Verify that codebase context artifacts are current:
 [ -f docs/context/ROUTING.md ] && echo "Routing table exists" || echo "No routing table"
 [ -f docs/context/DRIFT-WATCHLIST.md ] && echo "Drift watchlist exists" || echo "No drift watchlist"
 [ -f CLAUDE.md ] && echo "CLAUDE.md exists" || echo "No CLAUDE.md"
-[ -f AGENTS.md ] && echo "AGENTS.md exists" || echo "No AGENTS.md"
+[ -L AGENTS.md ] && echo "AGENTS.md is symlink (good)" || { [ -f AGENTS.md ] && echo "X AGENTS.md is a regular file — should be symlink to CLAUDE.md (drift risk)" || echo "No AGENTS.md"; }
 ```
 
 If stale or missing, recommend `/tune-repo`. Do not block grooming.
@@ -81,18 +81,55 @@ Also evaluate backlog budget:
 If the backlog sprawls, declare:
 `This is now a reduction session. Default action is keep/merge/defer/close, not add.`
 
-## Phase 2: Discovery
+### Step 6: Compute Health Metrics
 
-Launch parallel discovery lanes:
+Gather quantitative project health signals. See `architecture-fitness.md` for full
+metrics collection script and red flag thresholds.
 
-| Agent | Focus |
-|-------|-------|
-| Product strategist | gaps vs vision, user value opportunities |
-| Technical archaeologist | code health, architectural debt, improvement patterns |
-| Domain auditors | `/audit --all` |
-| Growth analyst | acquisition, activation, retention opportunities |
+Key metrics to capture:
+- LOC per module (top 20 largest files)
+- Fix-to-feature ratio (last 100 commits)
+- Test-to-code ratio
+- LOC growth rate (last 7 days)
+- Open issue count
 
-Synthesize findings into 3-5 strategic themes with evidence.
+Store as `{health_metrics}` for Phase 2 context.
+
+## Phase 2: Architecture Critique
+
+Three parallel investigation tracks. This is the immune system — it catches broken
+trajectories before issues deepen them. See `architecture-fitness.md` for full
+prompts, routing tables, and templates.
+
+### Track A: Reference Architecture Search
+
+Launch 2-3 sub-agents to find similar projects:
+
+- Gemini CLI: "We're building [project description from project.md]. Find open-source repos, articles, frameworks solving similar problems."
+- Web search: "[domain] open-source [tech stack alternatives]"
+- Codex: scan codebase for architectural patterns, compare to industry standard
+
+For each reference found, capture:
+- Design choices and tech stack
+- What worked, what to adopt/avoid
+- Scale and maturity signals
+
+### Track B: Domain Skill Invocation
+
+Detect project domain from `project.md` and codebase, then invoke relevant skills
+per the routing table in `architecture-fitness.md`.
+
+Each skill audits the current codebase through its lens. Aggregate findings as
+architectural concerns.
+
+### Track C: Multi-Model Architecture Thinktank
+
+Invoke `/research thinktank` with project context + architecture docs + health metrics.
+Use the thinktank prompt template from `architecture-fitness.md`.
+
+Also invoke CLI agents (`pi`, `gemini`, `codex`) for harness-diverse perspectives.
+
+Synthesize findings from all three tracks into 3-5 strategic themes with evidence.
 
 Present a Mermaid dependency map:
 
@@ -106,9 +143,31 @@ graph LR
 
 Then ask which themes to explore.
 
-## Phase 3: Research
+## Phase 2.5: Present Options
+
+Synthesize findings from tracks A-C into 2-3 architectural options:
+
+1. **Incremental tuning** — keep current architecture, fix specific issues
+2. **Targeted restructuring** — change one major dimension (language, framework, pattern)
+3. **Radical restructuring** — throw it away and rebuild (only when evidence supports it)
+
+Always include the radical option when:
+- LOC grew >3x in a sprint without proportional value
+- Fix-to-feature ratio exceeds 2:1
+- Multiple models independently recommend a different approach
+- Reference architectures show a fundamentally simpler path
+
+See `architecture-fitness.md` for option presentation format.
+
+Ask: **"What range of change is acceptable this session?"**
+
+This sets the scope for Phases 3-5 (grooming within the chosen architectural direction).
+
+## Phase 3: Research (scoped by Phase 2.5)
 
 For each theme the user wants to explore, do research before scoping.
+Research is now scoped to the architectural direction chosen in Phase 2.5.
+If radical restructuring was chosen, research the target architecture deeply.
 
 ### Research lanes
 

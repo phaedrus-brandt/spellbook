@@ -105,8 +105,8 @@ The point is single ownership. One issue should map to one active autopilot lane
 8. **Visual QA** — If diff touches frontend files (`app/`, `components/`, `*.css`), run `/visual-qa --fix`. Fix P0/P1 before proceeding.
 9. **Agentic QA** — If diff touches prompts, model routing, tool schemas, or agent instructions, run `/llm-infrastructure` and inspect trace/eval coverage before shipping.
 10. **Refine** — `/pr-fix --refactor`, update docs inline, then run simplification pass:
-    - Preferred accelerator (if native in current harness): `/simplify`
-    - Portable fallback (required): manual module-depth review + simplification edits using Ousterhout checks: shallow modules, information leakage, pass-throughs, and compatibility shims with no active contract
+    - **Mandatory when diff >200 LOC net:** run `/simplify` — no exceptions
+    - For smaller diffs: manual module-depth review + simplification edits using Ousterhout checks: shallow modules, information leakage, pass-throughs, and compatibility shims with no active contract
     - Optional accelerator: use an `ousterhout` persona/agent if the harness provides one
 11. **Dogfood QA** — Run automated QA against local dev server (see Dogfood QA section below).
    Iterate until no P0/P1 issues remain. **Do not open a PR until QA passes.**
