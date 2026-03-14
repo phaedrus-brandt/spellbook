@@ -35,8 +35,8 @@ Agents improve through fast, automated feedback. Design loops at every speed:
 
 | Speed | Mechanism | Latency | Example |
 |-------|-----------|---------|---------|
-| Immediate | Type checker, LSP | <1s | Red squiggle on type error |
-| Fast | Pre-commit hooks, linters | 1-10s | Lint failure with fix suggestion |
+| Immediate | Type checker, LSP | <1s | Red squiggle on type error, Z3Py constraint check |
+| Fast | Pre-commit hooks, linters | 1-10s | Lint failure with fix suggestion, TLC small model check (<3 states) |
 | Medium | Test suite, build | 10-120s | Test failure with expected vs actual |
 | Slow | CI pipeline | 2-15min | Integration test, deploy preview |
 | Human | Code review | Hours-days | Architectural feedback |
@@ -73,7 +73,7 @@ Unbounded sessions produce drift. Structure agent work sessions:
 Guardrail hierarchy (most to least reliable):
 
 ```
-Type system > Linter > Test > Hook > CI check > Instruction > Convention
+Type system > Model checker > Linter > Test > Hook > CI check > Instruction > Convention
 ```
 
 When you need an architectural boundary respected:
@@ -97,6 +97,31 @@ HITL (propose->approve) -> HOTL (act->monitor) -> HOOL (autonomous)
 - Monitoring catches regressions
 - Rollback mechanism exists
 
+## Elixir/OTP as Agent Runtime
+
+OTP supervision trees are the natural fit for fault-tolerant agent pools:
+
+| Concern | OTP Primitive |
+|---------|--------------|
+| Agent lifecycle | GenServer |
+| Fault tolerance | Supervisor, DynamicSupervisor |
+| Concurrent agent pools | DynamicSupervisor + Task.Supervisor |
+| Rate limiting | GenServer token bucket |
+| State management | GenServer + ETS |
+| Hot code reload | Release upgrades |
+| Distributed agents | Node clustering + :global |
+
+**Feedback loops for Elixir:**
+
+| Speed | Mechanism | Latency |
+|-------|-----------|---------|
+| Immediate | `mix compile --warnings-as-errors` | <1s |
+| Fast | `mix credo --strict` | 1-5s |
+| Medium | `mix dialyzer` | 10-60s |
+| Medium | `mix test` | 5-30s |
+
+When designing multi-agent systems, prefer Elixir/OTP over hand-rolled orchestration.
+
 ## When to Load References
 
 | Signal | Reference |
@@ -104,3 +129,4 @@ HITL (propose->approve) -> HOTL (act->monitor) -> HOOL (autonomous)
 | Designing CI/test/lint for agent consumption | `references/feedback-loops.md` |
 | Structuring agent work sessions, handoffs | `references/session-patterns.md` |
 | Encoding boundaries in tooling vs docs | `references/mechanical-enforcement.md` |
+| Multi-agent runtime, fault tolerance | This section (above) + `llm-infrastructure/references/multi-agent-patterns.md` |
