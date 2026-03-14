@@ -42,17 +42,36 @@ in the same turn. Do not stop at recommendations unless the user explicitly asks
 **Intent-first backlog.** Every issue must carry a clear Intent Contract that downstream
 build/PR workflows can reference.
 
-**Backlog is strategy, not storage.** Keep the backlog small, current, and legible.
-Rough target: a couple dozen active issues, not 100+.
+**Backlog is strategy, not storage.** GitHub issues are the active plan — 20-30 max,
+every one groomed to score >= 70, every one execution-ready or clearly blocked.
+Ideas beyond the active window live in `.groom/BACKLOG.md`.
 
-**Slash before adding.** When the backlog sprawls, default to merge/close/defer/rewrite
-until the remaining set reflects the highest-priority themes.
+**Two-tier system.** GitHub = commitments. `.groom/BACKLOG.md` = ideas, someday/maybes,
+deferred themes, research prompts. Groom sessions read BACKLOG.md for promotion
+candidates and write back demoted ideas. See `references/backlog-doctrine.md`.
+
+**100% groomed or it doesn't belong.** If an issue can't pass `/issue lint` >= 70,
+it's either not ready (fix it) or not real (move to BACKLOG.md or close).
+
+**Slash before adding.** When the backlog exceeds 30 open issues, default to
+merge/close/demote-to-BACKLOG.md until it's back under the cap.
 
 **One roadmap, not many.** The backlog should read like the project's current plan,
 not an archive of every bug, nit, brainstorm, review comment, or screenshot.
 
-**Use judgment, not quotas.** The point is coherence and execution bandwidth, not
-hitting an exact issue count.
+**Code is a liability.** Every line fights for its life. Prefer deletion over addition.
+
+**Never afraid to break compatibility** for a more elegant design.
+
+**Never afraid of esoteric technology** if it's the best fit.
+
+**Never afraid to throw away code** that's too much complexity for too little value.
+
+**Architecture before issues.** Don't create issues that deepen a broken architecture.
+
+**Reference architecture first.** Always search for existing implementations before designing from scratch.
+
+**Model diversity for architecture.** Use thinktank + CLI agents for diverse perspectives on design decisions.
 
 ## Org-Wide Standards
 
@@ -63,12 +82,13 @@ Load that file before creating any issues.
 
 Run `/groom` in six phases:
 
-1. **Context** — load or update `project.md`, check repo context freshness, read retro, capture user pain, audit backlog health
-2. **Discovery** — launch parallel lanes and synthesize 3-5 strategic themes
-3. **Research** — do web, cross-repo, and codebase research before scoping
-4. **Exploration** — pitch options, recommend one, discuss, validate, then lock direction
-5. **Synthesis** — reduce the backlog first, then create only missing strategic issues
-6. **Artifact** — save a dated grooming plan and visual summary when useful
+1. **Ground** — load or update `project.md`, load `.groom/BACKLOG.md`, check repo context freshness, read retro, capture user pain, audit backlog health (enforce 20-30 cap), compute health metrics
+2. **Architecture Critique** — three parallel tracks: reference architecture search, domain skill invocation, multi-model thinktank. See `references/architecture-fitness.md`
+2.5. **Present Options** — synthesize tracks A-C into 2-3 architectural options (incremental to radical), ask user what range of change is acceptable
+3. **Research** — web, cross-repo, and codebase research, scoped to the direction chosen in 2.5
+4. **Exploration** — pitch options, recommend one, discuss, validate with thinktank, then lock direction
+5. **Synthesis** — reduce GitHub backlog to cap (demote to BACKLOG.md, close, merge), then promote from BACKLOG.md or create for missing gaps. Every surviving issue must score >= 70.
+6. **Artifact** — save a dated grooming plan, update `.groom/BACKLOG.md`, visual summary when useful
 
 Synthesis default:
 - issue edits, issue creation, issue closure, and label/milestone cleanup are part of the normal `/groom` deliverable
@@ -79,7 +99,8 @@ Synthesis default:
 ## References
 
 ### Workflow
-- `references/interactive-workflow.md` — full Phase 1-4 flow
+- `references/interactive-workflow.md` — full Phase 1-4 flow (includes architecture critique phases)
+- `references/architecture-fitness.md` — health metrics, domain skill routing, reference search prompts, thinktank templates
 - `references/synthesis-workflow.md` — backlog reduction, issue creation, summaries, plan artifact, visual output
 
 ### Standards
@@ -88,7 +109,7 @@ Synthesis default:
 - `references/project-baseline.md` — baseline project standards
 
 ### Backlog Doctrine (absorbed from agent-backlog)
-- `references/backlog-doctrine.md` — ordering, shaping, cadence, smells, definition of ready
+- `references/backlog-doctrine.md` — two-tier system (GitHub active + BACKLOG.md icebox), ordering, cap enforcement, cadence, smells
 - `references/github-issues.md` — platform primitives, hierarchy, intake, planning
 - `references/agent-issue-writing.md` — writing agent-executable issue bodies, type-specific guidance
 - `references/overhaul-workflow.md` — full backlog rebuild: audit, theme, reduce, rewrite, hierarchy
@@ -99,9 +120,11 @@ Synthesis default:
 
 Default stance:
 - explore before scoping
-- reduce before adding
+- reduce before adding (demote to BACKLOG.md, don't just close)
 - keep one canonical issue where several shallow issues would otherwise survive
+- promote from BACKLOG.md before inventing new issues
 - create new issues only for genuine roadmap gaps
+- end every session with GitHub backlog at 20-30 issues, 100% groomed
 
 ## Modes
 

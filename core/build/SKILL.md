@@ -114,9 +114,10 @@ Don't use when: single module, sequential dependencies dominate.
 
 ## Post-Implementation
 
-1. `code-simplifier:code-simplifier` agent for clarity
-2. `ousterhout` agent for module depth review
-3. Commit simplifications separately
+1. Run `/simplify` — mandatory before PR when diff >200 LOC net
+2. `code-simplifier:code-simplifier` agent for clarity
+3. `ousterhout` agent for module depth review
+4. Commit simplifications separately
 
 ## Visual QA (Frontend Changes)
 
