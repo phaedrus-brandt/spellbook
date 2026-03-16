@@ -33,24 +33,34 @@ If first argument matches a keyword, route directly to that reference:
 | `readwise` | `references/readwise.md` |
 | `xai` | `references/xai-search.md` |
 
-### No sub-capability (default): PARALLEL FANOUT
+### No sub-capability (default): MANDATORY PARALLEL FANOUT
 
-**When no keyword is specified, fan out to multiple sources in parallel.**
+**You MUST fan out to multiple sources. A single WebSearch is NOT research.**
+
 Research means gathering signal from many vantage points simultaneously.
-The routing table is a dispatch list, not a switch statement.
+WebSearch alone is a lookup, not research. The whole point of this skill is
+multi-source triangulation.
 
-For any research question, launch these in parallel (via Agent tool):
+**REQUIRED: Launch ALL of these in a single message (parallel Agent/Bash calls):**
 
-1. **Web search** (Exa/WebSearch) — current docs, implementations, pricing, APIs
-2. **Thinktank** (`./thinktank "question" --quick --perspectives 3`) — multi-model expert perspectives
-3. **xAI** — social signal, what practitioners are saying (when relevant)
-4. **Codebase search** (Grep/Glob) — what the project already does (when relevant)
+1. **Exa search** — Bash: `curl -s https://api.exa.ai/search -H "x-api-key: $EXA_API_KEY" ...`
+   See `references/exa-tools.md` for request format. WebSearch is fallback ONLY if curl fails.
+2. **Thinktank** — Write question to `/tmp/research-q.md`, create stub `/tmp/research-ctx.md`, then:
+   Bash: `thinktank /tmp/research-q.md /tmp/research-ctx.md --synthesis --quiet --output-dir /tmp/thinktank-out`
+   Note: thinktank requires a target path (use stub for pure questions). Always set `--output-dir /tmp/...` to avoid dumping in CWD.
+3. **xAI / social pulse** — Bash: `curl -s https://api.x.ai/v1/responses -H "Authorization: Bearer $XAI_API_KEY" ...`
+   Model MUST be `grok-4.20-beta-latest-non-reasoning` (only grok-4 supports tool use).
+   See `references/xai-search.md` for request format. Skip ONLY for purely technical/code queries.
+4. **Codebase** — Grep/Glob for what the project already does (skip only if query is unrelated to codebase)
 
-Then **synthesize** across all results: consensus, conflicts, citations, recommendations.
+**Then synthesize**: consensus, conflicts, citations, recommendations across ALL sources.
 
-Only narrow to a single source when:
+**Narrow to a single source ONLY when:**
 - The user explicitly names one (e.g., "/research web-search [query]")
-- The question is trivially answerable by one source (e.g., "what version is X?")
+- It's a version/fact lookup (e.g., "what version is X?")
+
+**If you catch yourself about to return results from only WebSearch — STOP.
+That means you skipped the fanout. Go back and launch the other sources.**
 
 ## Use When
 
