@@ -21,18 +21,22 @@ what it does, what tech it uses, what domains it touches.
 
 ### 2. Semantic Search for Relevant Primitives
 
-Use `scripts/search-embeddings.py` to find matching skills and agents:
+Run the search script bundled with the focus skill:
 
 ```bash
-python3 /path/to/spellbook/scripts/search-embeddings.py \
-  --project-dir . --top 20
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py --project-dir . --top 20 --json
 ```
 
-This embeds the project context and runs cosine similarity against
-the full Spellbook index (local + external sources).
+This automatically:
+- Fetches the pre-computed embeddings index from GitHub (cached at `~/.cache/spellbook/`)
+- Embeds the project context with Gemini Embedding 2
+- Returns ranked matches across all indexed sources (spellbook + anthropics + openai + vercel + community)
 
-If `search-embeddings.py` is not available or `embeddings.json` is missing,
-fall back to keyword matching against `index.yaml`.
+If the search script fails (no GEMINI_API_KEY), fall back to:
+```bash
+curl -sfL https://raw.githubusercontent.com/phrazzld/spellbook/master/index.yaml
+```
+Then read the descriptions manually and use your own judgment to rank.
 
 ### 3. Curate with Discernment
 
@@ -67,23 +71,10 @@ skills:
 Unqualified names resolve to `phrazzld/spellbook`. Any other source
 must use `owner/repo@skill-name` format.
 
-The `.spellbook` marker for external skills records the source:
-```yaml
-source: anthropics/skills
-name: frontend-design
-installed: 2026-03-16T20:00:00Z
-```
-
 ### 5. Include Agents
 
-Recommend agents alongside skills. The same search covers both types.
-Agents that match the project's needs go in the `agents:` section:
-
-```yaml
-agents:
-  - ousterhout          # phrazzld/spellbook agent
-  - react-pitfalls      # phrazzld/spellbook agent
-```
+Recommend agents alongside skills. The search covers both types.
+Agents that match the project's needs go in the `agents:` section.
 
 ### 6. Generate Manifest
 
@@ -92,9 +83,7 @@ agents:
 skills:
   - debug
   - autopilot
-  - groom
   - anthropics/skills@frontend-design
-  - vercel-labs/agent-skills@vercel-react-best-practices
 agents:
   - ousterhout
   - test-strategy-architect
@@ -104,7 +93,7 @@ agents:
 
 Show the user:
 - What was detected (tech stack, dependencies, project purpose)
-- Each recommended primitive with reasoning
+- Each recommended primitive with reasoning and score
 - The proposed manifest
 
 Ask: "Write this to .spellbook.yaml?"

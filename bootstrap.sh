@@ -5,7 +5,7 @@ set -euo pipefail
 # Installs global skills for each detected agent harness.
 # Global skills: focus, research, calibrate, reflect, skill
 # These are meta-process skills useful in any context. Everything else is project-local via /focus.
-# Run: curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/main/bootstrap.sh | bash
+# Run: curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/master/bootstrap.sh | bash
 
 REPO="phrazzld/spellbook"
 RAW="https://raw.githubusercontent.com/$REPO/main"
@@ -17,7 +17,7 @@ err()   { printf '\033[0;31m%s\033[0m\n' "$*" >&2; }
 
 install_focus() {
   local target="$1/focus"
-  mkdir -p "$target/references/harnesses"
+  mkdir -p "$target/references/harnesses" "$target/scripts"
 
   curl -sfL "$RAW/skills/focus/SKILL.md" -o "$target/SKILL.md" || { err "Failed to download focus/SKILL.md"; return 1; }
 
@@ -27,6 +27,9 @@ install_focus() {
   for ref in init sync search improve; do
     curl -sfL "$RAW/skills/focus/references/$ref.md" -o "$target/references/$ref.md" 2>/dev/null || true
   done
+
+  # Search script — self-contained, fetches + caches embeddings from GitHub
+  curl -sfL "$RAW/skills/focus/scripts/search.py" -o "$target/scripts/search.py" 2>/dev/null || true
 
   ok "  focus → $target"
 }
