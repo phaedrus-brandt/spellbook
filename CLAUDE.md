@@ -34,7 +34,7 @@ spellbook/
 
 ### For consumers (other repos)
 
-1. **Bootstrap** (once per machine): `curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/main/bootstrap.sh | bash`
+1. **Bootstrap** (once per machine): `curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/master/bootstrap.sh | bash`
 2. **Init** (per project): `/focus init` — analyzes project via embeddings, generates `.spellbook.yaml`
 3. **Sync**: `/focus` — pulls declared primitives from GitHub into project-local harness dirs
 4. **Manage**: `/focus add stripe`, `/focus remove moonshot`, `/focus search "webhook"`

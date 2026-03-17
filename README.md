@@ -8,7 +8,7 @@ Markdown-first. No application code, no dependencies. Primitives teach agents *h
 
 ```bash
 # Bootstrap (one-time per machine)
-curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/main/bootstrap.sh | bash
+curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/master/bootstrap.sh | bash
 ```
 
 This installs two global skills: `/focus` (primitive manager) and `/research` (multi-source web research). Everything else is project-local.

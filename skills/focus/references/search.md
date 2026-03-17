@@ -4,24 +4,35 @@ Search the Spellbook index for skills and agents matching a query.
 
 ## Process
 
-### 1. Semantic Search (preferred)
+### 1. Semantic Search
 
-Use the pre-computed embeddings index:
+Run the search script bundled with the focus skill:
 
 ```bash
-python3 /path/to/spellbook/scripts/search-embeddings.py "webhook handling" --top 10
+# Free-text query
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py "webhook handling" --top 10
+
+# Project analysis
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py --project-dir . --top 15
+
+# JSON output for programmatic use
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py "query" --json
+
+# Filter by type
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py "query" --type skill
+python3 ${CLAUDE_SKILL_DIR}/scripts/search.py "query" --type agent
 ```
 
-This embeds the query with Gemini Embedding 2 and ranks all indexed
-primitives (local + external sources) by cosine similarity.
+The script auto-fetches and caches `embeddings.json` from GitHub.
+Requires `GEMINI_API_KEY` or `GOOGLE_API_KEY` for query embedding.
 
-### 2. Fallback: Keyword Search
+### 2. Fallback
 
-If `embeddings.json` or the API key is unavailable, fall back to
-keyword matching against `index.yaml`:
-- Skill `name` (exact and substring)
-- Skill `description` (keyword matching)
-- Agent `name` and `description`
+If the script fails (no API key, no network), fetch `index.yaml`:
+```bash
+curl -sfL https://raw.githubusercontent.com/phrazzld/spellbook/master/index.yaml
+```
+Read descriptions and match manually.
 
 ### 3. Present Results
 
@@ -32,8 +43,7 @@ keyword matching against `index.yaml`:
 |---|-------|-------|---------------------------|-------------------------------|
 | 1 | 0.77  | skill | phrazzld/spellbook        | stripe                        |
 | 2 | 0.73  | agent | phrazzld/spellbook        | stripe-auditor                |
-| 3 | 0.68  | skill | phrazzld/spellbook        | external-integration-patterns |
-| 4 | 0.64  | skill | anthropics/skills         | mcp-builder                   |
+| 3 | 0.68  | skill | anthropics/skills         | mcp-builder                   |
 
 ### Actions
 - `/focus add stripe` — add to manifest

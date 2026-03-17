@@ -19,7 +19,7 @@ managed primitives on every run. Leave unmanaged primitives untouched.
 
 ```
 SPELLBOOK_REPO:    phrazzld/spellbook
-SPELLBOOK_RAW:     https://raw.githubusercontent.com/phrazzld/spellbook/main
+SPELLBOOK_RAW:     https://raw.githubusercontent.com/phrazzld/spellbook/master
 EMBEDDINGS_URL:    ${SPELLBOOK_RAW}/embeddings.json
 INDEX_URL:         ${SPELLBOOK_RAW}/index.yaml
 MANIFEST_FILE:     .spellbook.yaml
@@ -85,8 +85,9 @@ If not, run the init flow (see `references/init.md`):
 1. **Deeply analyze the project**: read CLAUDE.md, package.json, go.mod, mix.exs,
    directory structure, README, recent git history. Understand what this project
    IS, what tech it uses, what domains it touches.
-2. **Semantic search** against the embeddings index (144+ skills/agents across
-   multiple sources). Use `scripts/search-embeddings.py --project-dir .`
+2. **Semantic search**: run `python3 ${CLAUDE_SKILL_DIR}/scripts/search.py --project-dir . --top 20 --json`
+   This fetches the embeddings index from GitHub (cached locally), embeds the
+   project context, and returns ranked matches across all sources.
 3. For each candidate, ask: "Would this primitive provide value in THIS repo?"
    Reject any without a concrete use case.
 4. Generate `.spellbook.yaml` with recommended primitives (skills AND agents)
@@ -239,12 +240,11 @@ No harness config — focus handles translation per-harness.
 
 When invoked with a task description:
 
-1. Embed the task description with Gemini Embedding 2
-2. Cosine similarity against the full embeddings index (all sources)
-3. Check which primitives are already in the manifest
-4. Suggest additions (with reasoning and similarity scores)
-5. Ask user to confirm before modifying manifest
-6. Sync
+1. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/search.py "<task description>" --top 15 --json`
+2. Check which primitives are already in the manifest
+3. Suggest additions (with reasoning and similarity scores)
+4. Ask user to confirm before modifying manifest
+5. Sync
 
 ## Anti-Patterns
 
