@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Auto-regenerate index.yaml when SKILL.md files change.
+# Warn (don't block) when embeddings.json is stale.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# --- index.yaml: auto-regenerate (cheap, local) ---
+if git diff --cached --name-only | grep -q 'skills/.*/SKILL\.md'; then
+  echo "[pre-commit] SKILL.md changed — regenerating index.yaml"
+  bash "$REPO_ROOT/scripts/generate-index.sh" > /dev/null
+  git add "$REPO_ROOT/index.yaml"
+fi
+
+# --- embeddings.json: staleness check (no API call) ---
+if git diff --cached --name-only | grep -q 'skills/.*/SKILL\.md'; then
+  EMBEDDINGS="$REPO_ROOT/embeddings.json"
+  if [ -f "$EMBEDDINGS" ]; then
+    # Compute current local content hash
+    CURRENT_HASH=$(python3 -c "
+import hashlib
+from pathlib import Path
+h = hashlib.sha256()
+skills = Path('$REPO_ROOT/skills')
+for p in sorted(skills.glob('*/SKILL.md')):
+    h.update(p.read_bytes())
+print(h.hexdigest())
+" 2>/dev/null || echo "")
+
+    # Read stored hash from embeddings.json
+    STORED_HASH=$(python3 -c "
+import json
+with open('$EMBEDDINGS') as f:
+    data = json.load(f)
+print(data.get('local_content_hash', ''))
+" 2>/dev/null || echo "")
+
+    if [ -n "$CURRENT_HASH" ] && [ -n "$STORED_HASH" ] && [ "$CURRENT_HASH" != "$STORED_HASH" ]; then
+      echo ""
+      echo "[pre-commit] ⚠ embeddings.json is stale — skill content changed since last generation."
+      echo "  Run: python3 scripts/generate-embeddings.py"
+      echo "  (Requires GEMINI_API_KEY. Commit proceeds, but /focus search will use old vectors.)"
+      echo ""
+    fi
+  fi
+fi
