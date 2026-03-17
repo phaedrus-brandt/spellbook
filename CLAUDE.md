@@ -6,58 +6,68 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 **Spellbook** — a centralized library of agent primitives (skills and agents) for multi-model AI harnesses (Claude Code, Codex, Pi, Factory, Gemini). Markdown-first. Distributed to projects via the `/focus` skill, which pulls primitives from GitHub into local harness directories.
 
-**Architecture**: Flat skill library → Manifest-driven activation → Harness-specific installation.
+**Architecture**: Flat skill library → Embeddings-based discovery → Manifest-driven activation → Harness-specific installation.
 
 ## Repo Structure
 
 ```
 spellbook/
-├── skills/              # ALL skills, flat (72 skills)
-│   ├── focus/           # Meta-skill: manages primitive activation
-│   ├── debug/           # Investigate, audit, triage, fix
-│   ├── autopilot/       # Full delivery pipeline
-│   ├── stripe/          # Stripe integration patterns
+├── skills/                  # All skills, flat
+│   ├── focus/               # Meta-skill: manages primitive activation
+│   ├── research/            # Multi-source web research
+│   ├── debug/               # Investigate, audit, triage, fix
+│   ├── autopilot/           # Full delivery pipeline
 │   └── ...
-├── agents/              # Agent definitions, flat
-├── collections.yaml     # Named groups of skills (payments, web, etc.)
-├── index.yaml           # Generated catalog for discovery
-├── bootstrap.sh         # One-command install of focus skill
-├── scripts/
-│   ├── generate-index.sh
-│   └── sync.sh          # Legacy — being replaced by /focus
-├── overlays/            # Legacy — harness-specific skill customizations
-├── docs/
-└── CLAUDE.md
+├── agents/                  # Agent definitions, flat (markdown + YAML frontmatter)
+├── embeddings.json          # Pre-computed Gemini Embedding 2 index (all sources)
+├── index.yaml               # Generated text catalog
+├── collections.yaml         # Named skill groups (human browsing)
+├── bootstrap.sh             # Installs global skills (focus + research)
+├── .spellbook.yaml          # This repo's own manifest
+└── scripts/
+    ├── generate-index.sh    # Rebuild index.yaml from local skills
+    ├── generate-embeddings.py  # Rebuild embeddings.json (local + external sources)
+    └── search-embeddings.py # Query the embeddings index
 ```
 
 ## How It Works
 
 ### For consumers (other repos)
 
-1. **Bootstrap** (one-time per machine): `curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/main/bootstrap.sh | bash`
-2. **Init** (per project): Run `/focus init` — analyzes project, generates `.spellbook.yaml`
-3. **Sync**: Run `/focus` — pulls declared primitives from GitHub into local harness dirs
-4. **Manage**: `/focus add stripe`, `/focus remove moonshot`, `/focus search webhook`
+1. **Bootstrap** (once per machine): `curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/main/bootstrap.sh | bash`
+2. **Init** (per project): `/focus init` — analyzes project via embeddings, generates `.spellbook.yaml`
+3. **Sync**: `/focus` — pulls declared primitives from GitHub into project-local harness dirs
+4. **Manage**: `/focus add stripe`, `/focus remove moonshot`, `/focus search "webhook"`
 
 ### Manifest format (.spellbook.yaml)
 
 ```yaml
 skills:
-  - debug
+  - debug                                      # phrazzld/spellbook (default)
   - autopilot
-  - groom
-collections:
-  - payments
-agents: []
+  - anthropics/skills@frontend-design          # external source (FQN)
+  - vercel-labs/agent-skills@vercel-react-best-practices
+agents:
+  - ousterhout
+  - grug
 ```
 
-Checked into git. Harness-agnostic. Collections resolve via `collections.yaml`.
+Checked into git. Harness-agnostic. Unqualified names resolve to `phrazzld/spellbook`.
 
 ### Managed vs Unmanaged
 
 Spellbook-managed primitives have a `.spellbook` marker file in their directory.
-`/focus` only touches directories with this marker. Project-specific skills
+`/focus` only touches directories with this marker. Project-specific primitives
 without a marker are invisible to Spellbook and never modified.
+
+### Multi-Source Discovery
+
+`embeddings.json` contains pre-computed vectors (Gemini Embedding 2, 768-dim) for all
+indexed primitives across multiple GitHub sources. `/focus init` and `/focus search`
+use cosine similarity against this index for semantic matching.
+
+External sources are defined in `scripts/generate-embeddings.py`. To add a new source,
+add an entry to `EXTERNAL_SOURCES` and re-run the generator.
 
 ## Primitives
 
@@ -77,51 +87,39 @@ skill-name/
 
 ### Agents
 
-Agent definitions for harness subagent systems. Format varies by harness
-(Markdown for Claude Code, TOML for Codex). Spellbook stores in a canonical
-format and `/focus` translates per-harness.
-
-## SKILL.md Frontmatter
+Markdown files with YAML frontmatter. Canonical format (Claude Code native).
+`/focus` translates to TOML for Codex during install.
 
 ```yaml
 ---
-name: skill-name
-description: |
-  [What it does] + [When to use it / trigger phrases] + [Key capabilities]
-disable-model-invocation: true    # Optional. User-only (zero budget in Claude Code).
-argument-hint: "[example args]"   # Optional. Shown in skill menu.
+name: agent-name
+description: When to use this agent
+tools: Read, Grep, Glob, Bash
 ---
+[System prompt in markdown]
 ```
-
-## Collections
-
-Named groups of skills defined in `collections.yaml`:
-
-```yaml
-payments:
-  description: Payment processing, billing, and financial integrations
-  skills: [stripe, bitcoin, lightning]
-```
-
-Use in manifests: `collections: [payments]` expands to individual skills.
 
 ## Key Commands
 
 ```bash
-# Generate the skill index (run after adding/modifying skills)
+# Rebuild the text index
 ./scripts/generate-index.sh
 
-# Legacy sync (being replaced by /focus)
-./scripts/sync.sh claude
+# Rebuild the embeddings index (requires GEMINI_API_KEY)
+python3 scripts/generate-embeddings.py
+
+# Search the index
+python3 scripts/search-embeddings.py "your query"
+python3 scripts/search-embeddings.py --project-dir /path/to/project
 ```
 
 ## Adding a Skill
 
 1. Create `skills/{name}/SKILL.md` with frontmatter
 2. Add references/, scripts/, assets/ as needed
-3. Add to relevant collection in `collections.yaml` (if applicable)
-4. Run `./scripts/generate-index.sh` to update the index
-5. Commit and push — consumers get it on next `/focus sync`
+3. Run `./scripts/generate-index.sh`
+4. Run `python3 scripts/generate-embeddings.py`
+5. Commit and push — consumers get it on next `/focus`
 
 ## Principles
 
@@ -129,7 +127,10 @@ Use in manifests: `collections: [payments]` expands to individual skills.
 - **Manifest-driven** — projects declare what they need, focus delivers it
 - **Harness-agnostic** — primitives work across Claude Code, Codex, Pi, Factory
 - **Nuke and rebuild** — focus deletes and recreates managed primitives each sync
+- **Always project-local** — focus installs to project dirs, never global
 - **Marker-based ownership** — `.spellbook` file distinguishes managed from unmanaged
+- **Embeddings-first discovery** — semantic search via Gemini Embedding 2
+- **Multi-source** — index and install from any GitHub skill repo
 - **Progressive disclosure** — description → SKILL.md body → references on-demand
 - **GitHub as source of truth** — focus pulls from GitHub, works on any machine
 
