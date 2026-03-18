@@ -48,6 +48,31 @@ From conversation context:
 | **Missing artifacts** | What would have prevented friction? | Module API reference |
 | **Architecture insights** | Design decisions right/wrong? | SQLite for persistence |
 | **Bloat signals** | What layers should be deleted? | Compatibility shim with no real users |
+| **Gaps** | What was MISSING from the agent's toolkit? | See gap types below |
+
+#### Gap Types
+
+When a session reveals something MISSING (not broken, not friction — absent):
+
+| Gap Type | Signal | Remediation Target |
+|----------|--------|--------------------|
+| `missing_skill` | Had to improvise a workflow that should be reusable | Skill (create or enhance) |
+| `missing_tool` | Needed a capability no available tool provided | Hook or MCP integration |
+| `repeated_failure` | Same class of error across multiple sessions | Guardrail or lint rule |
+| `wrong_info` | Acted on stale/incorrect CLAUDE.md or reference | Update source doc |
+| `permission_friction` | Correct action blocked by permission model | Hook or settings adjustment |
+
+Omit the Gaps bucket when the session was clean — no gaps means no gaps.
+
+If gaps are found, output them as structured entries in `.spellbook/observations.ndjson`
+using the canonical schema (see `/calibrate`) with gap-specific extensions:
+
+```jsonl
+{"timestamp":"2026-03-18T12:00:00Z","primitive":"phrazzld/spellbook@reflect","type":"gap","summary":"No skill for X workflow","context":"Had to improvise...","confidence":0.7,"subtype":"missing_skill","remediation":"Skill"}
+```
+
+Gap-specific fields (`subtype`, `remediation`) extend the canonical fields — never replace them.
+Use the codification hierarchy (Phase 3) to determine the right remediation target.
 
 ### 3. Codification Pass
 
