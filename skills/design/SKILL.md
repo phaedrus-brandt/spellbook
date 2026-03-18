@@ -22,6 +22,7 @@ Reference skills preserved verbatim in `references/`:
 - `references/frontend-design.md` (Anthropic)
 - `references/vercel-react-best-practices.md` (Vercel)
 - `references/vercel-composition-patterns.md` (Vercel)
+- `references/ui-rules.md` — 152 severity-tagged UI rules (animation, typography, color, layout, interaction, forms, a11y, UX laws)
 
 ## Mode Selection
 
