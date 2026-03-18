@@ -1,5 +1,5 @@
 # Spellbook Index
-# Generated: 2026-03-17T16:51:09Z
+# Generated: 2026-03-18T13:29:56Z
 # Do not edit manually. Run: ./scripts/generate-index.sh
 
 skills:
@@ -75,6 +75,9 @@ skills:
   - name: dogfood
     description: "Systematically explore and test a web application to find bugs, UX issues, and other problems. Produces a structured report with full reproduction evidence -- screenshots, repro videos, and detailed r"
     tags: [--,a,application,bugs,detailed,evidence,explore,find,full,issues]
+  - name: electron
+    description: "Electron desktop app architecture: IPC, process separation, preload bridge, BrowserWindow lifecycle, tray apps, state management, crash recovery, packaging, security. Reference skill for all Electron "
+    tags: [app,apps,architecture,bridge,browserwindow,crash,desktop,electron,ipc,lifecycle]
   - name: external-integration-patterns
     description: "\"Patterns for reliable external service integration: env validation, health checks, error handling, observability. Invoke when integrating Stripe, Clerk, Sendgrid, or any external API.\""
     tags: [api,checks,clerk,env,error,external,handling,health,integrating,integration]
@@ -193,8 +196,8 @@ skills:
     description: "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workfl"
     tags: [a,an,be,capabilities,claude,create,creating,effective,existing,extends]
   - name: skill
-    description: "Create or update agent skills. Quality gates, classification, structure, frontmatter, progressive disclosure, packaging, absorption lifecycle. Use when: \"create a skill\", \"make this a skill\", \"update "
-    tags: [a,absorption,agent,classification,create,disclosure,frontmatter,gates,lifecycle,make]
+    description: "Engineer agent primitives: skills, agents, hooks, CLAUDE.md rules. Create, update, absorb, brainstorm, audit, and clean up primitives across the harness. Routes to the right primitive type for the job"
+    tags: [absorb,across,agent,agents,audit,brainstorm,claude,clean,create,engineer]
   - name: slack-app-scaffold
     description: "\"Scaffold Slack apps from existing functionality using Bolt for JavaScript and the Slack CLI. Use when turning a service, script, or workflow into a Slack app with events, commands, modals, or automat"
     tags: [a,app,apps,automat,bolt,cli,commands,events,existing,functionality]
@@ -204,6 +207,9 @@ skills:
   - name: stripe
     description: "Complete Stripe lifecycle: audit, design, scaffold, configure, verify, and maintain payment integrations. Covers webhooks, subscriptions, checkout flows, billing UX, local dev, reconciliation, and sec"
     tags: [audit,billing,checkout,complete,configure,covers,design,dev,flows,integrations]
+  - name: supabase
+    description: "Supabase integration patterns across all platforms: Next.js, Electron, Node.js, React Native. Client setup, auth (OAuth, email, magic link), RLS policies, Edge Functions, Realtime subscriptions, migra"
+    tags: [across,auth,client,edge,electron,email,functions,integration,js,link]
   - name: sysadmin-ops
     description: "Investigate host stability incidents (memory/process pressure), triage likely culprits, and drive safe recovery + hardening for multi-workspace Pi operations."
     tags: [culprits,drive,hardening,host,incidents,investigate,likely,memory,multi-workspace,operations]
