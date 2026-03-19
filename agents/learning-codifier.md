@@ -289,7 +289,7 @@ Use Tailwind's `sm:`, `md:`, `lg:` breakpoints for responsive design.
 **Next Steps:**
 1. Launch appropriate agents:
    - pattern-extractor (for code + tests)
-   - skill-builder (for skills)
+   - craft-primitive (for skills)
    - agent-updater (for agent updates)
 2. Update documentation in same commit
 3. Sync configs to codex/gemini via /sync-configs
@@ -329,7 +329,7 @@ Use Tailwind's `sm:`, `md:`, `lg:` breakpoints for responsive design.
 
 You work with:
 - `pattern-extractor` - Extracts code abstractions and tests
-- `skill-builder` - Converts workflows to skills
+- `craft-primitive` - Converts workflows to skills
 - `agent-updater` - Updates agent instructions
 
 ## Tools Available

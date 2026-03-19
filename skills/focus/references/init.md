@@ -145,13 +145,13 @@ proprietary infrastructure, or repo-specific deployment workflows.
 When in doubt, ask: "Would I want this skill if I started a new project with the
 same tech stack?" If yes → spellbook.
 
-When creating gap skills, invoke `/primitive` which runs the full research
+When creating gap skills, invoke `/craft-primitive` which runs the full research
 and context-engineering pipeline. Don't create shallow placeholder skills —
 the whole point is to encode knowledge the model doesn't already have.
 
 For each gap the user approves:
 
-1. Use `/primitive create {name}` — runs research, context-engineering, and
+1. Use `/craft-primitive create {name}` — runs research, context-engineering, and
    harness-engineering to craft a skill that goes beyond training data
 2. Create a branch in the local spellbook repo (or a worktree)
 3. Write the skill to `skills/{name}/SKILL.md` in the spellbook repo

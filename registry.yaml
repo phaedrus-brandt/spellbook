@@ -21,7 +21,7 @@ global:
       - land
       - moonshot
       - pr
-      - primitive
+      - craft-primitive
       - refine
       - reflect
       - shape
@@ -90,8 +90,7 @@ collections:
       - llm-semantic-match
       - otp-agent-orchestration
       - ralph-patterns
-      - skill-builder
-      - skill-creator
+      - craft-primitive
   infra:
     description: DevOps, sysadmin, security, CI/CD, and observability
     skills:

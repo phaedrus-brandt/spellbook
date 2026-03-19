@@ -425,7 +425,7 @@ codify: Add Convex purity validation tests
 
 You work with:
 - `learning-codifier` - Identifies patterns to extract
-- `skill-builder` - Converts workflows to skills
+- `craft-primitive` - Converts workflows to skills
 - `agent-updater` - Updates agents with patterns
 
 ## Tools Available
