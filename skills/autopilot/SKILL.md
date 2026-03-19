@@ -1,9 +1,9 @@
 ---
 name: autopilot
 description: |
-  Full delivery pipeline: plan, build, ship, settle.
-  Covers: shape/spec/design, TDD build, commit, PR creation, PR fix (CI/reviews/conflicts),
-  PR polish, simplify, test coverage, verify ACs, walkthrough, issue management.
+  Full delivery pipeline: plan, build, ship, land.
+  Covers: shape/spec/design, TDD build, commit, PR creation, /land (CI/reviews/polish/simplify),
+  test coverage, verify ACs, walkthrough, issue management.
   Use when: shipping features, fixing PRs, creating PRs, building issues, simplifying code,
   checking quality, writing commits, managing issues.
   Trigger: /autopilot, /build, /shape, /commit, /issue,
@@ -13,7 +13,7 @@ argument-hint: "[issue-id] or [sub-command]"
 
 # /autopilot
 
-Full delivery pipeline. From issue to merged PR in one command, or invoke sub-capabilities directly.
+Full delivery pipeline. From issue to merge-ready PR in one command, or invoke sub-capabilities directly.
 
 ## Routing
 
@@ -22,7 +22,7 @@ Full delivery pipeline. From issue to merged PR in one command, or invoke sub-ca
 | Spec, plan, design a feature — "shape this", "write a spec" | Standalone `/shape` skill |
 | Implement, code, TDD — "build this", "implement" | `references/build.md` |
 | Create/update a PR — "open PR", "create PR" | Standalone `/pr` skill |
-| Unblock, polish, simplify PR — "fix PR", "CI red", "simplify" | Standalone `/land` skill |
+| Unblock, polish, simplify PR — "fix PR", "CI red", "simplify" | Standalone `/land` skill  |
 | Verify acceptance criteria — "verify ACs" | `references/verify-ac.md` |
 | Lint, typecheck, test gates — "check quality" | `references/check-quality.md` |
 | TDD enforcement, coverage — "test coverage" | `references/test-coverage.md` |
@@ -41,8 +41,9 @@ Engineering lead running a sprint. Find work, ensure it's ready, delegate implem
 
 ## Objective
 
-Deliver Issue `$ARGUMENTS` (or highest-priority eligible open issue) as a merged PR with tests passing,
+Deliver Issue `$ARGUMENTS` (or highest-priority eligible open issue) as a **merge-ready PR** with tests passing,
 a clean dogfood QA pass, all reviews settled, and a walkthrough artifact that makes the merge case legible.
+**Do not merge.** The pipeline ends with an LGTM comment — the operator reviews and merges manually.
 
 An open PR for that issue counts as the active delivery lane. Do not create a duplicate PR
 for the same issue unless you first surface and justify a superseding lane.
@@ -211,10 +212,10 @@ The point is single ownership and meaningful progress. One issue should map to o
     - Run `/pr-polish`
     - Run `/simplify`
     - If these generate changes, commit and push, then return to step 15 (CI Gate) to re-verify
-18. **Merge** — Once CI is green, all reviews are settled, and polish is complete:
-    - Squash merge via `gh pr merge --squash`
-    - Never merge with failing checks
-    - Never merge with unaddressed review comments
+18. **LGTM** — Once CI is green, all reviews are settled, and polish is complete:
+    - Post an LGTM comment on the PR: `gh pr comment <PR> --body-file <path>` with a summary of what was done, evidence of CI/review/QA gates passing, and a note that the PR is ready for manual review and merge
+    - **Do NOT run `gh pr merge`.** The operator reviews and merges manually.
+    - Report completion: PR URL, all gates passed, awaiting manual merge
 19. **Retro (Optional)** — Only capture implementation signals when the repo already uses issue-scoped retro notes and the signal is worth keeping.
     - Use one file per issue under `.groom/retro/<issue>.md`.
     - Never append to a shared `.groom/retro.md`; skip retro entirely instead of creating merge-hot churn for low-value notes.
@@ -313,7 +314,7 @@ NOT stopping conditions: lacks description, seems big, unclear approach.
 
 ## Output
 
-Report: issue worked, spec status, design status, TDD evidence (RED/GREEN), dogfood QA summary (issues found/fixed), walkthrough artifact summary, commits made, PR URL, review comments settled (count + dispositions), and merge status.
+Report: issue worked, spec status, design status, TDD evidence (RED/GREEN), dogfood QA summary (issues found/fixed), walkthrough artifact summary, commits made, PR URL, review comments settled (count + dispositions), and LGTM status. Explicitly state: **awaiting manual review and merge**.
 
 ## Review Cadence
 
