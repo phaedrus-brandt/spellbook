@@ -1,5 +1,5 @@
 # Spellbook Index
-# Generated: 2026-03-19T13:24:29Z
+# Generated: 2026-03-19T16:20:24Z
 # Do not edit manually. Run: ./scripts/generate-index.sh
 
 skills:
@@ -60,6 +60,9 @@ skills:
   - name: context-engineering
     description: "Context lifecycle for AI agents: write, select, compress, isolate. Design high-signal context windows, instruction hierarchies, and memory strategies. Use when designing agent prompts, debugging conte"
     tags: [agent,agents,ai,compress,conte,context,debugging,design,designing,hierarchies]
+  - name: craft-primitive
+    description: "Create, update, or absorb agent primitives (skills and subagents). Quality gates, classification, structure, progressive disclosure, packaging, absorption lifecycle. Handles both skill and agent creat"
+    tags: [absorb,absorption,agent,both,classification,creat,create,disclosure,gates,handles]
   - name: crypto-gains
     description: "Calculate capital gains with FIFO, wash sale detection, term classification, and Form 8949 outputs."
     tags: [8949,calculate,capital,classification,detection,fifo,form,gains,outputs,sale]
@@ -177,9 +180,6 @@ skills:
   - name: pr
     description: "Tidy, commit, and open a world-class pull request. Organizes working directory, ensures correct branch, creates semantic conventional commits, then opens a high-quality PR with full evidence. Use when"
     tags: [a,branch,commit,commits,conventional,correct,creates,directory,ensures,evidence]
-  - name: primitive
-    description: "Create or update agent skills. Quality gates, classification, structure, frontmatter, progressive disclosure, packaging, absorption lifecycle. Use when: \"create a skill\", \"make this a skill\", \"update "
-    tags: [a,absorption,agent,classification,create,disclosure,frontmatter,gates,lifecycle,make]
   - name: product-marketing-context
     description: "Shared product-marketing context for growth-pack skills. Read this before writing copy, planning launches, doing CRO, pricing, SEO, social content, or campaign strategy. Builds a minimal context bundl"
     tags: [a,before,builds,bundl,campaign,content,context,copy,cro,doing]
@@ -201,12 +201,6 @@ skills:
   - name: shape
     description: "Shape a raw idea into something buildable. Product + technical exploration in one interactive session. Spec, design, critique, plan. Use when: \"shape this\", \"write a spec\", \"design this feature\", \"pla"
     tags: [a,buildable,critique,design,exploration,feature,idea,in,interactive,one]
-  - name: skill-builder
-    description: "Create new agent skills from procedural knowledge. Invoke PROACTIVELY when: - Discovering a reusable workflow pattern worth preserving - User asks to \"capture this as a skill\" or \"make this reusable\" "
-    tags: [-,a,agent,as,asks,capture,create,discovering,invoke,knowledge]
-  - name: skill-creator
-    description: "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workfl"
-    tags: [a,an,be,capabilities,claude,create,creating,effective,existing,extends]
   - name: slack-app-scaffold
     description: "\"Scaffold Slack apps from existing functionality using Bolt for JavaScript and the Slack CLI. Use when turning a service, script, or workflow into a Slack app with events, commands, modals, or automat"
     tags: [a,app,apps,automat,bolt,cli,commands,events,existing,functionality]
