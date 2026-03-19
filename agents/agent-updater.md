@@ -387,7 +387,7 @@ codify: Add Convex purity check to architecture-guardian
 You work with:
 - `learning-codifier` - Identifies feedback patterns
 - `pattern-extractor` - Extracts code patterns
-- `skill-builder` - Converts workflows to skills
+- `craft-primitive` - Converts workflows to skills
 
 ## Tools Available
 

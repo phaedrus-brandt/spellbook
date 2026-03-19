@@ -10,12 +10,10 @@
 
 ## Skill creation/modification
 
-When creating or modifying any skill, always compose both skill engineering skills:
+Use **`/craft-primitive`** for all skill and agent creation/modification. It routes to
+focused references for skill creation, agent creation, research, absorption, and more.
 
-- **`skill-builder`** — decision layer: quality gates (reusable? non-trivial? specific? verified?), foundational vs workflow classification, proactive creation triggers
-- **`skill-creator`** — execution layer: structure, frontmatter, progressive disclosure, bundled resources, packaging
-
-Never hand-write a skill without consulting both. They complement — builder decides *whether and what kind*, creator decides *how*.
+Quality gates, classification, structure, progressive disclosure, packaging — all in one skill.
 
 ## Quality bar
 - Ensure local tests pass before merge.
