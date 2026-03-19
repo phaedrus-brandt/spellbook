@@ -36,6 +36,26 @@ def _expect_non_empty_string(value: object, path: str) -> list[str]:
     return [f"{path} must be a non-empty string"]
 
 
+def _expect_string_list(
+    value: object,
+    path: str,
+    *,
+    allow_empty: bool,
+) -> list[str]:
+    errors = _expect_list(value, path)
+    if errors:
+        return errors
+
+    items = value
+    assert isinstance(items, list)
+    if not allow_empty and not items:
+        return [f"{path} must be a non-empty array"]
+
+    for index, item in enumerate(items):
+        errors.extend(_expect_non_empty_string(item, f"{path}[{index}]"))
+    return errors
+
+
 def _validate_object(
     value: object,
     path: str,
@@ -70,7 +90,13 @@ def validate_report(report: object) -> list[str]:
     if errors:
         return errors
 
-    errors.extend(_expect_dict(data["repo_summary"], "report.repo_summary"))
+    errors.extend(
+        _validate_object(
+            data["repo_summary"],
+            "report.repo_summary",
+            ("project",),
+        )
+    )
     errors.extend(_expect_list(data["wishlist"], "report.wishlist"))
     errors.extend(_expect_list(data["candidate_matrix"], "report.candidate_matrix"))
     errors.extend(_expect_list(data["selected_primitives"], "report.selected_primitives"))
@@ -91,10 +117,25 @@ def validate_report(report: object) -> list[str]:
     assert isinstance(gaps, list)
     assert isinstance(confidence, dict)
 
+    repo_summary = data["repo_summary"]
+    assert isinstance(repo_summary, dict)
+
     if not wishlist:
         errors.append("report.wishlist must contain at least one item")
     if not candidate_matrix:
         errors.append("report.candidate_matrix must contain at least one row")
+
+    for field in ("stack", "domains", "services", "signals"):
+        if field not in repo_summary:
+            errors.append(f"report.repo_summary.{field} is required")
+            continue
+        errors.extend(
+            _expect_string_list(
+                repo_summary[field],
+                f"report.repo_summary.{field}",
+                allow_empty=(field == "services"),
+            )
+        )
 
     for index, item in enumerate(wishlist):
         errors.extend(
@@ -110,11 +151,27 @@ def validate_report(report: object) -> list[str]:
             )
         )
         if isinstance(item, dict):
+            status = item.get("status")
+            if status != "gap":
+                if "primitive" not in item:
+                    errors.append(f"report.candidate_matrix[{index}].primitive is required")
+                else:
+                    errors.extend(
+                        _expect_non_empty_string(
+                            item["primitive"],
+                            f"report.candidate_matrix[{index}].primitive",
+                        )
+                    )
+
             if "evidence" not in item:
                 errors.append(f"report.candidate_matrix[{index}].evidence is required")
-            elif not isinstance(item["evidence"], list) or not item["evidence"]:
-                errors.append(
-                    f"report.candidate_matrix[{index}].evidence must be a non-empty array"
+            else:
+                errors.extend(
+                    _expect_string_list(
+                        item["evidence"],
+                        f"report.candidate_matrix[{index}].evidence",
+                        allow_empty=False,
+                    )
                 )
 
     for index, item in enumerate(selected_primitives):
@@ -141,8 +198,14 @@ def validate_report(report: object) -> list[str]:
 
     if "open_questions" not in confidence:
         errors.append("report.confidence.open_questions is required")
-    elif not isinstance(confidence["open_questions"], list):
-        errors.append("report.confidence.open_questions must be an array")
+    else:
+        errors.extend(
+            _expect_string_list(
+                confidence["open_questions"],
+                "report.confidence.open_questions",
+                allow_empty=True,
+            )
+        )
 
     return errors
 

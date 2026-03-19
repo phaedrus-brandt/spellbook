@@ -127,6 +127,10 @@ python3 ${SKILL_DIR}/scripts/init_report.py write \
 
 The input payload must satisfy this compact shape:
 
+- `repo_summary.project` must be a non-empty string.
+- `repo_summary.stack`, `domains`, `services`, and `signals` must be arrays of non-empty strings.
+- `candidate_matrix[*].primitive` is required for rows that represent a concrete candidate (`selected`, `rejected`, etc.); gap rows may omit it.
+
 ```json
 {
   "repo_summary": {

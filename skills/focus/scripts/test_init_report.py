@@ -95,6 +95,37 @@ class InitReportScriptTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("report.candidate_matrix[0].evidence is required", result.stderr)
 
+    def test_selected_candidate_requires_primitive(self) -> None:
+        broken = valid_report()
+        broken["candidate_matrix"][0].pop("primitive")
+
+        result = self.run_script("write", "--output", "/tmp/ignored.json", input_text=json.dumps(broken))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("report.candidate_matrix[0].primitive is required", result.stderr)
+
+    def test_gap_candidate_can_omit_primitive(self) -> None:
+        report = valid_report()
+        report["candidate_matrix"] = [
+            {
+                "wishlist_item": "repo tuning",
+                "status": "gap",
+                "rationale": "No existing primitive covers this need.",
+                "evidence": ["catalog search returned no strong matches"],
+            }
+        ]
+        report["selected_primitives"] = []
+
+        result = self.run_script("write", "--output", "/tmp/ignored.json", input_text=json.dumps(report))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_repo_summary_requires_documented_fields(self) -> None:
+        broken = valid_report()
+        broken["repo_summary"].pop("signals")
+
+        result = self.run_script("write", "--output", "/tmp/ignored.json", input_text=json.dumps(broken))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("report.repo_summary.signals is required", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
