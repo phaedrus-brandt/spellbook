@@ -1,5 +1,5 @@
 # Spellbook Index
-# Generated: 2026-03-19T13:07:06Z
+# Generated: 2026-03-19T13:24:29Z
 # Do not edit manually. Run: ./scripts/generate-index.sh
 
 skills:
@@ -22,8 +22,8 @@ skills:
     description: "Audit websites for SEO, performance, security, technical, content, and 15 other issue cateories with 230+ rules using the squirrelscan CLI. Returns LLM-optimized reports with health scores, broken lin"
     tags: [15,230,audit,broken,cateories,cli,content,health,issue,lin]
   - name: autopilot
-    description: "Full delivery pipeline: plan, build, ship, settle. Covers: shape/spec/design, TDD build, commit, PR creation, PR fix (CI/reviews/conflicts), PR polish, simplify, test coverage, verify ACs, walkthrough"
-    tags: [acs,build,ci,commit,conflicts,coverage,covers,creation,delivery,design]
+    description: "Full delivery pipeline: plan, build, ship, land. Covers: shape/spec/design, TDD build, commit, PR creation, /land (CI/reviews/polish/simplify), test coverage, verify ACs, walkthrough, issue management"
+    tags: [acs,build,ci,commit,coverage,covers,creation,delivery,design,full]
   - name: bitcoin
     description: "Complete Bitcoin payment lifecycle. Audits current state, fixes all issues, and verifies payment flows work end-to-end. Every run does all of this."
     tags: [audits,bitcoin,complete,current,end-to-end,every,fixes,flows,issues,lifecycle]
