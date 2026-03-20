@@ -25,7 +25,7 @@ Route verification work to the correct repo-local flow agent.
 |--------|-------|
 | `/verify-app` | Highest-priority default flow |
 | `/verify-app audit` | Audit verification coverage gaps |
-| `/verify-app <flow>` | Matching `verify-<flow>` agent |
+| `/verify-app <flow>` | Matching `verify-<flow>` agent. Flow keys must be lowercase hyphenated slugs. |
 
 ## Default Flow
 
@@ -40,6 +40,7 @@ If no flow is named, run the highest-priority `P0` flow that exists locally.
 
 ## Known Flows
 
+- Flow keys must stay lowercase hyphenated slugs and match the suffix in `verify-<flow>`.
 - `login` -> `verify-login`
 - `checkout` -> `verify-checkout`
 - `team-invite` -> `verify-team-invite`

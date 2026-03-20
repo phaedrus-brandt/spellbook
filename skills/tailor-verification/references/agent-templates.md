@@ -50,7 +50,7 @@ Prove that <flow name> works in the local repo and collect durable evidence.
 Replace every placeholder with repo facts:
 
 - real routes
-- actual fixture/user names
+- actual fixture usernames
 - exact evidence paths
 - repo-local commands
 - known failure modes for the flow

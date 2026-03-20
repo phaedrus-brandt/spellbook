@@ -17,6 +17,19 @@ argument-hint: "[init|add|audit] [flow]"
 Discover how a repo can be verified, then codify that knowledge into
 project-local verification primitives instead of rediscovering it every run.
 
+## Composition
+
+This skill orchestrates; it does not reimplement adjacent primitives.
+
+| Dependency | Used For |
+|------------|----------|
+| `/research` | Phase 1 research on stack docs, auth patterns, and known verification gotchas |
+| `/craft-primitive` | Phase 4 creation of project-local flow agents and the `verify-app` router |
+| Browser tooling (`agent-browser`, `browser-use`, repo-native E2E) | Validating that crafted browser-based flows can actually run |
+
+Do not duplicate `/research` retrieval logic or `/craft-primitive` packaging
+logic. Compose with them directly.
+
 ## Outputs
 
 - One verification agent per flow, usually `verify-<flow>.md`
