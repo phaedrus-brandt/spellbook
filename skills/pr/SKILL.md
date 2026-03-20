@@ -124,7 +124,8 @@ not a changelog. Lead with significance, not mechanics.
 #### Visible on first load:
 
 **Reviewer Evidence** — If the PR has user-visible changes, put proof first:
-- Screenshot or video link (prefer GitHub-uploaded attachments)
+- Screenshot, video, or artifact link. Prefer GitHub-uploaded attachments for
+  screenshots/videos and CI artifacts or step summaries for generated proof.
 - One-sentence merge claim
 - "Start here" pointer for reviewers
 
@@ -180,7 +181,8 @@ If `--draft` flag, add `--draft` to create.
 ### 8. Post-Open
 
 - Add a context comment if notable design decisions were made
-- If the PR touches frontend, attach screenshots or demo video
+- If the PR touches frontend, attach screenshots or demo video to the PR via
+  GitHub attachments rather than checking review media into the repo
 - Report the PR URL
 
 Do NOT claim the PR is "ready to merge" or "review-clean". Opening a PR
@@ -192,6 +194,19 @@ If the change is user-visible:
 - **Motion/interaction/state change** → video (screencast or terminal recording)
 - **Static visual change** → screenshots (before/after)
 - **Internal/API change** → text before/after is sufficient
+
+## Artifact Hygiene
+
+PR evidence is review support, not product content.
+
+- Prefer GitHub-uploaded attachments for screenshots and videos shown in the PR
+  body or comments.
+- Prefer CI artifacts or step summaries for generated logs, walkthrough
+  bundles, coverage proof, and other machine-produced verification output.
+- Do not commit PR-only evidence into the repo unless the repo explicitly wants
+  versioned artifacts or the harness cannot publish attachments/artifacts.
+- If a checked-in fallback is unavoidable, keep it branch-scoped, explain why
+  in the PR, and do not normalize it as the default workflow.
 
 For private repos, use GitHub-uploaded attachments, not raw URLs.
 

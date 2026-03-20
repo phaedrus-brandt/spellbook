@@ -130,6 +130,18 @@ Phase 1 (fix) → Phase 2 (polish) → Phase 3 (simplify)
 Each phase that generates commits sends you back to Phase 1 to re-verify
 CI and reviews. The loop terminates when a full pass produces no changes.
 
+## Reviewer Artifact Policy
+
+When settlement needs screenshots, videos, logs, or walkthrough proof:
+
+- Prefer GitHub-uploaded attachments for screenshots and videos referenced by
+  reviewers.
+- Prefer CI artifacts or step summaries for generated verification output.
+- Do not commit PR-only review evidence unless the repo explicitly versions
+  those artifacts or the harness cannot publish them another way.
+- If a checked-in fallback is unavoidable, keep it branch-scoped and document
+  the reason in the PR.
+
 ## Flags
 
 - `$ARGUMENTS` as PR number — target specific PR
