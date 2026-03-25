@@ -90,14 +90,10 @@ hooks:                               # skill-scoped lifecycle hooks (optional)
 
 ### Dynamic context injection
 
-Use `` !`command` `` to inject runtime data before the skill reaches the model:
-
-```markdown
-Current branch: !`git branch --show-current`
-Recent changes: !`git log --oneline -5`
-```
-
-The command runs at skill load time. Claude sees the output, not the command.
+Skills support shell injection: wrap a command in backticks prefixed with `!`
+and the output replaces the placeholder at skill load time. For example, a
+skill can inject the current git branch or recent commits so the model sees
+live data, not the command. See the Claude Code skills docs for syntax.
 
 ## Evaluating a Skill (/harness eval)
 

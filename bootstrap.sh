@@ -46,18 +46,37 @@ link_local() {
   # Symlink each skill dir individually (not the whole skills/ dir)
   # so harnesses can have their own non-spellbook skills alongside
   mkdir -p "$harness_dir/skills"
+
+  # Clean stale non-symlinked skills that share names with current spellbook skills
   for skill_dir in "$SPELLBOOK/skills"/*/; do
     local name=$(basename "$skill_dir")
-    ln -sfn "$skill_dir" "$harness_dir/skills/$name"
-    ok "    $name → $harness_dir/skills/$name"
+    local target="$harness_dir/skills/$name"
+    # If a real (non-symlink) dir exists where we want to place a symlink, trash it
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      warn "    Replacing stale $name with symlink"
+      if command -v /usr/bin/trash &>/dev/null; then
+        /usr/bin/trash "$target" 2>/dev/null || true
+      fi
+    fi
+    ln -sfn "$skill_dir" "$target"
+    ok "    $name → $target"
   done
 
   info "  Linking agents..."
   mkdir -p "$harness_dir/agents"
+
+  # Clean stale non-symlinked agents
   for agent_file in "$SPELLBOOK/agents"/*.md; do
     local name=$(basename "$agent_file")
-    ln -sfn "$agent_file" "$harness_dir/agents/$name"
-    ok "    $name → $harness_dir/agents/$name"
+    local target="$harness_dir/agents/$name"
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      warn "    Replacing stale $name with symlink"
+      if command -v /usr/bin/trash &>/dev/null; then
+        /usr/bin/trash "$target" 2>/dev/null || true
+      fi
+    fi
+    ln -sfn "$agent_file" "$target"
+    ok "    $name → $target"
   done
 
   # Link harness-specific configs if they exist
