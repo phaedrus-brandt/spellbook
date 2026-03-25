@@ -1,5 +1,5 @@
 # Spellbook Index
-# Generated: 2026-03-25T16:05:57Z
+# Generated: 2026-03-25T16:06:58Z
 # Do not edit manually. Run: ./scripts/generate-index.sh
 
 skills:
@@ -31,11 +31,17 @@ skills:
 agents:
   - name: beck
     description: "TDD + simple design - \"Red. Green. Refactor\""
+  - name: builder
+    description: "Implements specs via TDD. Follows the planner's context packet exactly. Heads-down execution."
   - name: carmack
     description: "Direct implementation + shippability - \"Focus is deciding what NOT to do\""
+  - name: critic
+    description: "Evaluates builder output against grading criteria. Skeptical by default. Fails or approves."
   - name: grug
     description: "Complexity demon hunter - \"complexity very, very bad\""
   - name: ousterhout
     description: "Deep modules + information hiding - \"Deep modules manage complexity\""
+  - name: planner
+    description: "Decomposes work into buildable specs. Writes context packets. Does NOT implement."
 
 # Collections are defined in collections.yaml
