@@ -1,139 +1,49 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
-
 ## What This Repo Is
 
-**Spellbook** — a centralized library of agent primitives (skills and agents) for multi-model AI harnesses (Claude Code, Codex, Pi, Factory, Gemini). Markdown-first. Distributed to projects via the `/focus` skill, which pulls primitives from GitHub into local harness directories.
+**Spellbook** — 8 workflow skills, 7 agents, and harness configs for
+AI-assisted development. One repo, all harnesses, symlinked to
+~/.claude, ~/.codex, ~/.pi via bootstrap.sh.
 
-**Architecture**: Flat skill library → Embeddings-based discovery → Manifest-driven activation → Harness-specific installation.
-
-## Repo Structure
+## Structure
 
 ```
 spellbook/
-├── skills/                  # All skills, flat
-│   ├── focus/               # Meta-skill: manages primitive activation
-│   ├── research/            # Multi-source web research
-│   ├── debug/               # Investigate, audit, triage, fix
-│   ├── autopilot/           # Full delivery pipeline
-│   └── ...
-├── agents/                  # Agent definitions, flat (markdown + YAML frontmatter)
-├── registry.yaml            # Single source of truth: globals, sources, collections
-├── bootstrap.sh             # Installs global skills (reads registry.yaml)
-├── .spellbook.yaml          # This repo's own manifest
-└── scripts/
-    ├── lib/
-    │   └── search_core.py      # Shared search primitives (cosine_similarity, embed_query, etc.)
-    ├── generate-embeddings.py  # Build local embeddings cache (sources from registry.yaml)
-    └── search-embeddings.py    # Query and auto-refresh the local cache
+├── skills/        # 8 skills: autopilot, code-review, debug, groom,
+│                  #   harness, reflect, research, shape
+├── agents/        # 7 agents: planner, builder, critic,
+│                  #   ousterhout, carmack, grug, beck
+├── harnesses/     # Per-harness configs, hooks, shared principles
+├── registry.yaml  # Single source of truth for globals
+└── bootstrap.sh   # Symlinks spellbook → harness dirs
 ```
 
-## How It Works
-
-### For consumers (other repos)
-
-1. **Bootstrap** (once per machine): `curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/master/bootstrap.sh | bash`
-2. **Init** (per project): `/focus init` — analyzes project via embeddings, generates `.spellbook.yaml`
-3. **Sync**: `/focus` — pulls declared primitives from GitHub into project-local harness dirs
-4. **Manage**: `/focus add stripe`, `/focus remove moonshot`, `/focus search "webhook"`
-
-### Manifest format (.spellbook.yaml)
-
-```yaml
-skills:
-  - debug                                      # phrazzld/spellbook (default)
-  - autopilot
-  - anthropics/skills@frontend-design          # external source (FQN)
-  - vercel-labs/agent-skills@vercel-react-best-practices
-agents:
-  - ousterhout
-  - grug
-```
-
-Checked into git. Harness-agnostic. Unqualified names resolve to `phrazzld/spellbook`.
-
-### Managed vs Unmanaged
-
-Spellbook-managed primitives have a `.spellbook` marker file in their directory.
-`/focus` only touches directories with this marker. Project-specific primitives
-without a marker are invisible to Spellbook and never modified.
-
-### Multi-Source Discovery
-
-`index.yaml` is the committed text catalog for local Spellbook primitives.
-Embeddings are generated and cached locally (Gemini Embedding 2, 768-dim) from
-`index.yaml` plus external sources listed in `registry.yaml`. `/focus init` and
-`/focus search` use cosine similarity against that local cache for semantic matching.
-
-External sources are defined in `registry.yaml` under `sources`. To add a new source,
-add an entry there and re-run the embeddings generator.
-
-## Primitives
-
-Two types: **skills** and **agents**.
-
-### Skills
-
-A directory with a `SKILL.md` file following the [Agent Skills spec](https://agentskills.io):
+## Workflow
 
 ```
-skill-name/
-├── SKILL.md          # Required. Frontmatter + instructions.
-├── references/       # Optional. Supporting docs loaded on-demand.
-├── scripts/          # Optional. Executable code.
-└── assets/           # Optional. Templates, resources.
+backlog.d/ → /groom → /shape (planner) → /autopilot (builder) → /code-review (critic + bench) → ship
 ```
-
-### Agents
-
-Markdown files with YAML frontmatter. Canonical format (Claude Code native).
-`/focus` translates to TOML for Codex during install.
-
-```yaml
----
-name: agent-name
-description: When to use this agent
-tools: Read, Grep, Glob, Bash
----
-[System prompt in markdown]
-```
-
-## Key Commands
-
-```bash
-# Prewarm the local embeddings cache (requires GEMINI_API_KEY)
-python3 scripts/generate-embeddings.py
-
-# Search and auto-refresh the local cache
-python3 scripts/search-embeddings.py "your query"
-python3 scripts/search-embeddings.py --project-dir /path/to/project
-```
-
-## Adding a Skill
-
-1. Create `skills/{name}/SKILL.md` with frontmatter
-2. Add references/, scripts/, assets/ as needed
-3. Commit and push — consumers regenerate embeddings locally on first search
 
 ## Principles
 
-- **Flat over nested** — every skill at `skills/{name}/`, no hierarchy
-- **Manifest-driven** — projects declare what they need, focus delivers it
-- **Harness-agnostic** — primitives work across Claude Code, Codex, Pi, Factory
-- **Nuke and rebuild** — focus deletes and recreates managed primitives each sync
-- **Always project-local** — focus installs to project dirs, never global
-- **Marker-based ownership** — `.spellbook` file distinguishes managed from unmanaged
-- **Embeddings-first discovery** — semantic search via Gemini Embedding 2
-- **Multi-source** — index and install from any GitHub skill repo
-- **Progressive disclosure** — description → SKILL.md body → references on-demand
-- **GitHub as source of truth** — focus pulls from GitHub, works on any machine
+See `harnesses/shared/principles.md` for engineering doctrine.
 
-## Artifact Hygiene
+- **8 skills, 7 agents** — resist expansion
+- **Harness is the product** — models are commodities
+- **Gotchas > instructions** — enumerate what goes wrong
+- **Description is the trigger** — write it assertively
+- **Strip non-load-bearing scaffold** — stress-test after model upgrades
+- **Map, not manual** — AGENTS.md and CLAUDE.md point to skills, not contain them
 
-- Default scratch output goes to `/tmp`, not repo-relative paths
-- Never require stable shared filenames for PR-local evidence
-- Commit artifacts only when the repo explicitly wants them versioned
-- **Focus output is committed to git, never gitignored.** Harness install
-  directories (`.claude/skills/`, `.agents/`, `.codex/`) are project artifacts,
-  not build output. They are checked into the consuming repo's git history.
+## Gotchas for Contributing to This Repo
+
+- Skills encode judgment, not procedures. If the model already knows how, delete the skill.
+- SKILL.md must be < 500 lines. Extract deep content to references/.
+- Run `/harness lint` on any skill you create or modify.
+- Run `/harness eval` to verify the skill actually improves output vs baseline.
+- The pre-commit hook regenerates index.yaml — don't edit it manually.
+- bootstrap.sh has two modes: symlink (local checkout) and download (remote).
+  Test both paths if you change it.
+- `harnesses/claude/settings.json` is COPIED by bootstrap (Claude modifies it
+  at runtime), not symlinked. Changes there need a re-bootstrap to take effect.

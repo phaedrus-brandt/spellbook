@@ -2,11 +2,12 @@
 set -euo pipefail
 
 # Spellbook Bootstrap
-# Installs global process skills and agents for each detected agent harness.
-# Reads registry.yaml for the canonical list of global primitives.
 #
-# These are process/methodology primitives useful in any context.
-# Domain skills (stripe, next-patterns, etc.) are project-local via /focus.
+# Two modes:
+#   LOCAL:  Symlinks harness dirs to a local spellbook checkout (fast, editable)
+#   REMOTE: Downloads from GitHub (works on any machine without a checkout)
+#
+# Local mode is preferred. Remote is the fallback for fresh machines.
 #
 # Run: curl -sL https://raw.githubusercontent.com/phrazzld/spellbook/master/bootstrap.sh | bash
 
@@ -18,48 +19,123 @@ ok()    { printf '\033[0;32m%s\033[0m\n' "$*"; }
 warn()  { printf '\033[0;33m%s\033[0m\n' "$*"; }
 err()   { printf '\033[0;31m%s\033[0m\n' "$*" >&2; }
 
-# --- Skill Installers ---
+# --- Detect local spellbook checkout ---
 
-install_focus() {
-  local target="$1/focus"
-  mkdir -p "$target/references/harnesses" "$target/scripts"
+SPELLBOOK=""
+for candidate in \
+  "$HOME/Development/spellbook" \
+  "$HOME/dev/spellbook" \
+  "$HOME/src/spellbook" \
+  "$HOME/code/spellbook"; do
+  if [ -d "$candidate/skills" ] && [ -f "$candidate/registry.yaml" ]; then
+    SPELLBOOK="$candidate"
+    break
+  fi
+done
 
-  curl -sfL "$RAW/skills/focus/SKILL.md" -o "$target/SKILL.md" || { err "Failed to download focus/SKILL.md"; return 1; }
+# Allow override via environment
+SPELLBOOK="${SPELLBOOK_DIR:-$SPELLBOOK}"
 
-  for ref in claude-code codex; do
-    curl -sfL "$RAW/skills/focus/references/harnesses/$ref.md" -o "$target/references/harnesses/$ref.md" 2>/dev/null || true
+# --- Local mode: symlink ---
+
+link_local() {
+  local harness="$1"        # e.g. "claude"
+  local harness_dir="$2"    # e.g. "$HOME/.claude"
+
+  info "  Linking skills..."
+  # Symlink each skill dir individually (not the whole skills/ dir)
+  # so harnesses can have their own non-spellbook skills alongside
+  mkdir -p "$harness_dir/skills"
+
+  # Clean stale non-symlinked skills that share names with current spellbook skills
+  for skill_dir in "$SPELLBOOK/skills"/*/; do
+    local name=$(basename "$skill_dir")
+    local target="$harness_dir/skills/$name"
+    # If a real (non-symlink) dir exists where we want to place a symlink, trash it
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      warn "    Replacing stale $name with symlink"
+      if command -v /usr/bin/trash &>/dev/null; then
+        /usr/bin/trash "$target" 2>/dev/null || true
+      fi
+    fi
+    ln -sfn "$skill_dir" "$target"
+    ok "    $name → $target"
   done
-  for ref in init sync search improve; do
-    curl -sfL "$RAW/skills/focus/references/$ref.md" -o "$target/references/$ref.md" 2>/dev/null || true
+
+  info "  Linking agents..."
+  mkdir -p "$harness_dir/agents"
+
+  # Clean stale non-symlinked agents
+  for agent_file in "$SPELLBOOK/agents"/*.md; do
+    local name=$(basename "$agent_file")
+    local target="$harness_dir/agents/$name"
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      warn "    Replacing stale $name with symlink"
+      if command -v /usr/bin/trash &>/dev/null; then
+        /usr/bin/trash "$target" 2>/dev/null || true
+      fi
+    fi
+    ln -sfn "$agent_file" "$target"
+    ok "    $name → $target"
   done
 
-  curl -sfL "$RAW/skills/focus/scripts/search.py" -o "$target/scripts/search.py" 2>/dev/null || true
-
-  ok "  focus → $target"
+  # Link harness-specific configs if they exist
+  local harness_config="$SPELLBOOK/harnesses/$harness"
+  if [ -d "$harness_config" ]; then
+    info "  Linking harness config..."
+    case "$harness" in
+      claude)
+        # CLAUDE.md: symlink
+        [ -f "$harness_config/CLAUDE.md" ] && \
+          ln -sfn "$harness_config/CLAUDE.md" "$harness_dir/CLAUDE.md" && \
+          ok "    CLAUDE.md"
+        # hooks/: symlink individual scripts (preserve harness-local hooks)
+        if [ -d "$harness_config/hooks" ]; then
+          mkdir -p "$harness_dir/hooks"
+          for hook in "$harness_config/hooks"/*.py "$harness_config/hooks"/*.sh; do
+            [ -f "$hook" ] && ln -sfn "$hook" "$harness_dir/hooks/$(basename "$hook")"
+          done
+          ok "    hooks/"
+        fi
+        # settings.json: COPY, not symlink (Claude modifies it at runtime)
+        [ -f "$harness_config/settings.json" ] && \
+          cp "$harness_config/settings.json" "$harness_dir/settings.json" && \
+          ok "    settings.json (copied)"
+        ;;
+      codex)
+        [ -f "$harness_config/config.toml" ] && \
+          mkdir -p "$harness_dir/config" && \
+          ln -sfn "$harness_config/config.toml" "$harness_dir/config/config.toml" && \
+          ok "    config.toml"
+        ;;
+      pi)
+        if [ -d "$harness_config/context/global" ]; then
+          mkdir -p "$harness_dir/agent"
+          for f in "$harness_config/context/global"/*.md; do
+            [ -f "$f" ] && ln -sfn "$f" "$harness_dir/agent/$(basename "$f")"
+          done
+          ok "    context/global/*.md"
+        fi
+        [ -f "$harness_config/settings.json" ] && \
+          ln -sfn "$harness_config/settings.json" "$harness_dir/settings.json" && \
+          ok "    settings.json"
+        ;;
+    esac
+  fi
 }
 
-install_research() {
-  local target="$1/research"
-  mkdir -p "$target/references"
+# --- Remote mode: download from GitHub ---
 
-  curl -sfL "$RAW/skills/research/SKILL.md" -o "$target/SKILL.md" || { err "Failed to download research/SKILL.md"; return 1; }
-
-  for ref in web-search delegate thinktank introspect readwise exa-tools xai-search; do
-    curl -sfL "$RAW/skills/research/references/$ref.md" -o "$target/references/$ref.md" 2>/dev/null || true
-  done
-
-  ok "  research → $target"
-}
-
-install_simple_skill() {
+download_skill() {
   local skills_dir="$1"
   local name="$2"
   local target="$skills_dir/$name"
   mkdir -p "$target/references"
 
-  curl -sfL "$RAW/skills/$name/SKILL.md" -o "$target/SKILL.md" || { err "Failed to download $name/SKILL.md"; return 1; }
+  curl -sfL "$RAW/skills/$name/SKILL.md" -o "$target/SKILL.md" || { err "Failed: $name/SKILL.md"; return 1; }
 
   # Best-effort: download references via GitHub API
+  local refs
   refs=$(curl -sf "https://api.github.com/repos/$REPO/contents/skills/$name/references" 2>/dev/null | \
     python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['type']=='file']" 2>/dev/null) || true
   if [ -n "$refs" ]; then
@@ -68,214 +144,126 @@ install_simple_skill() {
     done
   fi
 
-  # Best-effort: download nested reference directories (up to 2 levels deep)
-  nested=$(curl -sf "https://api.github.com/repos/$REPO/contents/skills/$name/references" 2>/dev/null | \
-    python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['type']=='dir']" 2>/dev/null) || true
-  if [ -n "$nested" ]; then
-    echo "$nested" | while read -r dname; do
-      mkdir -p "$target/references/$dname"
-      # Download files at this level
-      nfiles=$(curl -sf "https://api.github.com/repos/$REPO/contents/skills/$name/references/$dname" 2>/dev/null | \
-        python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['type']=='file']" 2>/dev/null) || true
-      [ -n "$nfiles" ] && echo "$nfiles" | while read -r nfname; do
-        curl -sfL "$RAW/skills/$name/references/$dname/$nfname" -o "$target/references/$dname/$nfname" 2>/dev/null || true
-      done
-      # Download subdirectories (second level — e.g. audit-checklists/growth/*.md)
-      subdirs=$(curl -sf "https://api.github.com/repos/$REPO/contents/skills/$name/references/$dname" 2>/dev/null | \
-        python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['type']=='dir']" 2>/dev/null) || true
-      [ -n "$subdirs" ] && echo "$subdirs" | while read -r sdname; do
-        mkdir -p "$target/references/$dname/$sdname"
-        sdfiles=$(curl -sf "https://api.github.com/repos/$REPO/contents/skills/$name/references/$dname/$sdname" 2>/dev/null | \
-          python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['type']=='file']" 2>/dev/null) || true
-        [ -n "$sdfiles" ] && echo "$sdfiles" | while read -r sdfname; do
-          curl -sfL "$RAW/skills/$name/references/$dname/$sdname/$sdfname" -o "$target/references/$dname/$sdname/$sdfname" 2>/dev/null || true
-        done
-      done
-    done
-  fi
-
   ok "  $name → $target"
 }
 
-# --- Agent Installer ---
-
-install_agent() {
+download_agent() {
   local agents_dir="$1"
   local name="$2"
   mkdir -p "$agents_dir"
-
-  curl -sfL "$RAW/agents/$name.md" -o "$agents_dir/$name.md" || { err "Failed to download agent $name"; return 1; }
-
+  curl -sfL "$RAW/agents/$name.md" -o "$agents_dir/$name.md" || { err "Failed: agent $name"; return 1; }
   ok "  $name → $agents_dir/$name.md"
+}
+
+install_remote() {
+  local skills_dir="$1"
+  local agents_dir="$2"
+
+  # Fetch registry.yaml for the skill/agent list
+  local registry
+  registry=$(curl -sfL "$RAW/registry.yaml") || { err "Failed to fetch registry.yaml"; return 1; }
+
+  # Parse primitives from registry
+  local parsed
+  parsed=$(mktemp)
+  echo "$registry" | python3 -c "
+import re, sys
+lines = sys.stdin.read().split('\n')
+def extract(lines, path):
+    depth, target_indent, items, capturing = 0, [None]*len(path), [], False
+    for line in lines:
+        if not line.strip() or line.strip().startswith('#'): continue
+        indent, stripped = len(line)-len(line.lstrip()), line.strip()
+        if depth < len(path):
+            if stripped.startswith(path[depth]+':'):
+                target_indent[depth] = indent; depth += 1
+                if depth == len(path):
+                    capturing = True
+                    rest = stripped[len(path[-1])+1:].strip()
+                    if rest.startswith('[') and rest.endswith(']'):
+                        items = [v.strip() for v in rest[1:-1].split(',')]; break
+                continue
+        elif capturing:
+            if indent <= target_indent[-1]: break
+            if stripped.startswith('- '): items.append(stripped[2:].strip())
+    return items
+custom = extract(lines, ['global','skills','custom_install'])
+standard = extract(lines, ['global','skills','standard'])
+agents = extract(lines, ['global','agents'])
+safe = re.compile(r'^[a-z0-9-]+\$')
+for n in custom+standard+agents:
+    if not safe.match(n): print(f'INVALID: {n}', file=sys.stderr); sys.exit(1)
+print('CUSTOM_INSTALL=('+' '.join(custom)+')')
+print('GLOBAL_SKILLS=('+' '.join(standard)+')')
+print('GLOBAL_AGENTS=('+' '.join(agents)+')')
+" > "$parsed" || { err "Failed to parse registry.yaml"; rm -f "$parsed"; return 1; }
+
+  source "$parsed"
+  rm -f "$parsed"
+
+  for skill in "${CUSTOM_INSTALL[@]}" "${GLOBAL_SKILLS[@]}"; do
+    download_skill "$skills_dir" "$skill"
+  done
+
+  info "  Installing agents..."
+  for agent in "${GLOBAL_AGENTS[@]}"; do
+    download_agent "$agents_dir" "$agent"
+  done
 }
 
 # --- Orchestration ---
 
-# Bootstrap-installed primitives intentionally have NO .spellbook marker.
-# Markers denote /focus-managed (project-local) primitives. Global skills
-# are never nuked/rebuilt by /focus — they're managed by bootstrap alone.
-
-# Read global primitives from registry.yaml (single source of truth).
-# On first run, registry.yaml is fetched from GitHub alongside the script.
-REGISTRY_URL="$RAW/registry.yaml"
-REGISTRY_YAML=$(curl -sfL "$REGISTRY_URL") || { err "Failed to fetch registry.yaml"; exit 1; }
-
-# Parse global primitives from registry.yaml without pyyaml (not in stdlib).
-# Writes to temp file instead of eval for safety.
-PARSED=$(mktemp)
-trap 'rm -f "$PARSED"' EXIT
-
-echo "$REGISTRY_YAML" | python3 -c "
-import re, sys
-
-lines = sys.stdin.read().split('\n')
-
-def extract_items(lines, path):
-    depth = 0
-    target_indent = [None] * len(path)
-    items = []
-    capturing = False
-    for line in lines:
-        if not line.strip() or line.strip().startswith('#'):
-            continue
-        indent = len(line) - len(line.lstrip())
-        stripped = line.strip()
-        if depth < len(path):
-            key = path[depth] + ':'
-            if stripped.startswith(key):
-                target_indent[depth] = indent
-                depth += 1
-                if depth == len(path):
-                    capturing = True
-                    rest = stripped[len(key):].strip()
-                    if rest.startswith('[') and rest.endswith(']'):
-                        items = [v.strip() for v in rest[1:-1].split(',')]
-                        break
-                continue
-        elif capturing:
-            if indent <= target_indent[-1]:
-                break
-            if stripped.startswith('- '):
-                items.append(stripped[2:].strip())
-    return items
-
-custom = extract_items(lines, ['global', 'skills', 'custom_install'])
-standard = extract_items(lines, ['global', 'skills', 'standard'])
-agents = extract_items(lines, ['global', 'agents'])
-
-# Validate items contain only safe characters (lowercase, digits, hyphens)
-safe = re.compile(r'^[a-z0-9-]+$')
-for name in custom + standard + agents:
-    if not safe.match(name):
-        print(f'INVALID: {name}', file=sys.stderr)
-        sys.exit(1)
-
-print('CUSTOM_INSTALL=(' + ' '.join(custom) + ')')
-print('GLOBAL_SKILLS=(' + ' '.join(standard) + ')')
-print('GLOBAL_AGENTS=(' + ' '.join(agents) + ')')
-" > "$PARSED" || { err "Failed to parse registry.yaml"; exit 1; }
-
-source "$PARSED"
-
-# Validate parse produced results
-if [ ${#GLOBAL_SKILLS[@]} -eq 0 ]; then
-  err "No global skills found in registry.yaml — parse failure"; exit 1
-fi
-if [ ${#GLOBAL_AGENTS[@]} -eq 0 ]; then
-  err "No global agents found in registry.yaml — parse failure"; exit 1
-fi
-
-install_globals() {
-  local skills_dir="$1"
-  local agents_dir="$2"
-
-  # Skills with custom installers (complex directory structures)
-  for custom in "${CUSTOM_INSTALL[@]}"; do
-    case "$custom" in
-      focus)    install_focus "$skills_dir" ;;
-      research) install_research "$skills_dir" ;;
-      *)        install_simple_skill "$skills_dir" "$custom" ;;
-    esac
-  done
-
-  # Skills with standard layout
-  for skill in "${GLOBAL_SKILLS[@]}"; do
-    install_simple_skill "$skills_dir" "$skill"
-  done
-
-  # Agents
-  info "  Installing agents..."
-  for agent in "${GLOBAL_AGENTS[@]}"; do
-    install_agent "$agents_dir" "$agent"
-  done
-}
-
-# Map harness to its agents directory
-agents_dir_for() {
-  local harness="$1"
-  case "$harness" in
-    claude)  echo "$HOME/.claude/agents" ;;
-    codex)   echo "$HOME/.codex/agents" ;;
-    agents)  echo "$HOME/.agents/agents" ;;
-    pi)      echo "$HOME/.pi/agents" ;;
-    *)       echo "$HOME/.claude/agents" ;;
-  esac
-}
-
 info "Spellbook Bootstrap"
-info "Installing global process skills + agents..."
+if [ -n "$SPELLBOOK" ]; then
+  info "Local checkout detected: $SPELLBOOK"
+  info "Mode: symlink"
+else
+  info "No local checkout found."
+  info "Mode: download from GitHub"
+fi
 echo
 
 installed=0
 
-# Claude Code
-if [ -d "$HOME/.claude" ] || command -v claude &>/dev/null; then
-  info "Detected: Claude Code"
-  install_globals "$HOME/.claude/skills" "$(agents_dir_for claude)"
-  installed=$((installed + 1))
-fi
+for harness in claude codex pi; do
+  harness_dir="$HOME/.$harness"
 
-# Codex
-if [ -d "$HOME/.codex" ] || command -v codex &>/dev/null; then
-  info "Detected: Codex"
-  install_globals "$HOME/.codex/skills" "$(agents_dir_for codex)"
-  installed=$((installed + 1))
-fi
+  # Detect harness
+  if [ ! -d "$harness_dir" ] && ! command -v "$harness" &>/dev/null; then
+    continue
+  fi
 
-# Agents (generic .agents convention) — skip if skills dir is a symlink to another repo
-if [ -d "$HOME/.agents" ] && [ ! -L "$HOME/.agents/skills" ]; then
-  info "Detected: .agents"
-  install_globals "$HOME/.agents/skills" "$(agents_dir_for agents)"
-  installed=$((installed + 1))
-fi
+  info "Detected: $harness"
+  mkdir -p "$harness_dir"
 
-# Pi
-if [ -d "$HOME/.pi" ] || command -v pi &>/dev/null; then
-  info "Detected: Pi"
-  install_globals "$HOME/.pi/skills" "$(agents_dir_for pi)"
-  installed=$((installed + 1))
-fi
+  if [ -n "$SPELLBOOK" ]; then
+    link_local "$harness" "$harness_dir"
+  else
+    local agents_dir="$harness_dir/agents"
+    install_remote "$harness_dir/skills" "$agents_dir"
+  fi
 
-echo
+  installed=$((installed + 1))
+  echo
+done
+
 if [ "$installed" -eq 0 ]; then
   warn "No agent harnesses detected."
   warn "Installing to ~/.claude/ as default."
-  install_globals "$HOME/.claude/skills" "$(agents_dir_for claude)"
+  mkdir -p "$HOME/.claude"
+  if [ -n "$SPELLBOOK" ]; then
+    link_local "claude" "$HOME/.claude"
+  else
+    install_remote "$HOME/.claude/skills" "$HOME/.claude/agents"
+  fi
   installed=1
 fi
 
-ALL_SKILLS=("${CUSTOM_INSTALL[@]}" "${GLOBAL_SKILLS[@]}")
-total_skills=${#ALL_SKILLS[@]}
-total_agents=${#GLOBAL_AGENTS[@]}
-
 ok "Done. Installed to $installed harness(es)."
 echo
-info "Global skills ($total_skills): ${ALL_SKILLS[*]}"
-info "Global agents ($total_agents): ${GLOBAL_AGENTS[*]}"
-echo
-info "Domain skills are project-local via /focus."
-echo
-info "Next steps:"
-info "  1. Open any project"
-info "  2. Run /focus to initialize"
-info "  3. Edit .spellbook.yaml to customize domain skills"
+if [ -n "$SPELLBOOK" ]; then
+  info "Mode: symlink (edits in $SPELLBOOK propagate instantly)"
+else
+  info "Mode: downloaded from GitHub"
+  info "For symlink mode, clone spellbook and re-run."
+fi
