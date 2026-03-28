@@ -4,3 +4,4 @@ __pycache__/
 .bak/
 .pi/state/
 embeddings.json
+.env

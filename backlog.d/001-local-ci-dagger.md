@@ -1,7 +1,7 @@
 # Local CI via Dagger — kill the push-wait-read loop
 
 Priority: high
-Status: ready
+Status: in-progress
 Estimate: L
 
 ## Goal
@@ -13,8 +13,8 @@ Agent runs full CI locally in seconds before push. GitHub Actions becomes merge-
 - Don't change existing test suites
 
 ## Oracle
-- [ ] `dagger call test` runs full test suite locally and passes
-- [ ] `dagger call lint` runs linters locally and passes
+- [x] `dagger call check` runs all 7 quality gates locally and passes (11s)
+- [x] `dagger call lint-shell` / `lint-yaml` / `lint-python` run linters individually
 - [ ] GitHub Actions workflow simplified to merge-gate only (triggers on PR merge, not push)
 - [ ] `/autopilot` pipeline calls local CI before push
 - [ ] Self-healing: CI failure triggers repair agent that proposes fix

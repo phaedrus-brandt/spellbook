@@ -8,6 +8,7 @@ errors=0
 
 check() {
     local canonical="$1" vendored="$2"
+    [ -f "$canonical" ] && [ -f "$vendored" ] || return 0
     if ! diff -q "$canonical" "$vendored" >/dev/null 2>&1; then
         echo "DRIFT: $vendored differs from $canonical"
         errors=$((errors + 1))

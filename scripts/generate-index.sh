@@ -21,7 +21,7 @@ for skill_dir in "$REPO_ROOT"/skills/*/; do
   name=$(basename "$skill_dir")
 
   # Extract description from frontmatter
-  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{found=1; sub(/^description: *\|? */, ""); if ($0 != "" && $0 != "|") print; next} found && /^  /{sub(/^  /,""); printf "%s ", $0; next} found && !/^  /{found=0}' "$skill_md" | head -1 | sed 's/ *$//' | cut -c1-200)
+  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{found=1; sub(/^description: *\|? */, ""); if ($0 != "" && $0 != "|") print; next} found && /^  /{sub(/^  /,""); printf "%s ", $0; next} found && !/^  /{found=0}' "$skill_md" | head -1 | sed 's/ *$//' | LC_ALL=C cut -c1-200)
 
   # Fallback: single-line description
   if [ -z "$desc" ]; then
@@ -48,7 +48,7 @@ for agent_file in "$REPO_ROOT"/agents/*.md; do
   [ -f "$agent_file" ] || continue
   name=$(basename "$agent_file" .md)
 
-  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{found=1; sub(/^description: *\|? */, ""); if ($0 != "" && $0 != "|") print; next} found && /^  /{sub(/^  /,""); printf "%s ", $0; next} found && !/^  /{found=0}' "$agent_file" | head -1 | sed 's/ *$//' | cut -c1-200)
+  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{found=1; sub(/^description: *\|? */, ""); if ($0 != "" && $0 != "|") print; next} found && /^  /{sub(/^  /,""); printf "%s ", $0; next} found && !/^  /{found=0}' "$agent_file" | head -1 | sed 's/ *$//' | LC_ALL=C cut -c1-200)
   if [ -z "$desc" ]; then
     desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{sub(/^description: *"?/,""); sub(/"? *$/,""); print; exit}' "$agent_file")
   fi
