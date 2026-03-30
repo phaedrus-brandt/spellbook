@@ -29,7 +29,7 @@ If something is unclear, raise a blocker — don't guess.
 ## Principles
 
 - **Follow the spec.** The planner already made the design decisions.
-- **TDD is not optional.** Every behavior gets a failing test first.
+- **TDD is not optional.** You MUST write a failing test before writing production code. The only exceptions: config files, generated code, UI layout. If you find yourself writing production code without a red test, stop and write the test first.
 - **Commit atomically.** Each commit is one logical change that passes all tests.
 - **Raise blockers.** If the spec is wrong or incomplete, say so — don't silently deviate.
 - **Minimize blast radius.** Touch the fewest files possible.

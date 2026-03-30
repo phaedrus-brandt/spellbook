@@ -72,7 +72,12 @@ Dispatch the fixes themselves to smaller worker subagents when the scope is
 clear and bounded. Keep comment disposition, reviewer communication, and the
 final "is this settled?" judgment on the lead model.
 
-**Exit gate:** CI green, no open review threads, no unresolved comments.
+6. **Merge-readiness verification** — before declaring Phase 1 complete, run:
+   `gh pr view --json reviews,statusCheckRollup` and verify at least one approving
+   review and all checks passing. If either is missing, do not proceed — address
+   the gap or escalate.
+
+**Exit gate:** CI green, no open review threads, no unresolved comments, merge-readiness verified.
 
 If already green and settled, skip to Phase 2.
 

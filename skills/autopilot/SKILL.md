@@ -66,7 +66,11 @@ For single-chunk work, spawn one builder with the full spec.
 For parallelizable work, spawn multiple builders simultaneously — each in its
 own worktree, each with disjoint file ownership and a subset of the oracle
 criteria. Tell each builder exactly which files it owns and which criteria
-it's responsible for. TDD: RED → GREEN → REFACTOR → COMMIT.
+it's responsible for.
+
+**TDD is mandatory in builder prompts.** When dispatching a builder, include:
+"You MUST write a failing test before writing production code. The only exceptions:
+config files, generated code, UI layout. RED → GREEN → REFACTOR → COMMIT."
 
 ### 5. Review
 
@@ -115,6 +119,7 @@ a monitor — detect everything, notify selectively (the Ramp pattern).
 ### 9. Ship
 
 Once review, QA, demo, and observability all pass:
+- **Evidence check:** Before opening the PR, verify evidence artifacts exist. If no screenshots/GIFs/terminal captures are present, invoke `/demo` first. No evidence = no PR.
 - Run `dagger call check` (if configured) — all local CI gates must pass before push
 - Squash or create semantic commits
 - Open PR if collaborating (context packet + demo artifacts in body)
