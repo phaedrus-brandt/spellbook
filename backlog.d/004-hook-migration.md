@@ -1,7 +1,7 @@
 # Migrate Claude hooks to harness-agnostic enforcement
 
 Priority: high
-Status: ready
+Status: in-progress
 Estimate: L
 
 ## Goal

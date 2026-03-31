@@ -41,7 +41,13 @@ temporal decomposition, hidden coupling.
 - Reference architecture first: search before building any system >200 LOC
 - Favor convention over configuration
 - Full project reads over incremental searches
-- Fix what you touch — including pre-existing issues in the same area
+- Fix what you touch — including pre-existing issues in the same area.
+  Never excuse broken things in PR comments ("pre-existing", "not introduced
+  by this PR", "not a blocker"). If it's broken and you touched it, fix it
+  or file an issue with a concrete plan.
+- TODO items must pass the Torvalds Test: actionable, scoped, and time-bound.
+  No "maybe", "consider", "someday", "nice to have". If it's not worth doing
+  now, delete it. If it is, write it as an imperative with clear acceptance criteria.
 - Document invariants, not obvious mechanics
 
 ## Testing

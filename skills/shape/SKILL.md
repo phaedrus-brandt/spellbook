@@ -97,6 +97,7 @@ If you can't write an oracle, the goal isn't clear enough. Go back to Phase 2.
 - **50 repo anchors:** If everything is an anchor, nothing is. Pick 3-10 files whose patterns MUST be followed.
 - **Skipping non-goals:** Agents drift toward scope expansion. Non-goals are load-bearing constraints. Write them.
 - **Over-speccing implementation details:** Specify WHAT and WHY. Let the builder figure out HOW. Detailed pseudocode cascades errors.
+- **Editing shape docs without ripple check:** Files with `shaping: true` frontmatter are live specs. Before editing, check: do affordance tables need updating? Does this change ripple to other work streams or context packets? Edit the doc, then trace the consequences.
 
 ## Principles
 
