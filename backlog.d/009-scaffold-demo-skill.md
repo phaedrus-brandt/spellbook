@@ -1,7 +1,7 @@
 # Demo as a scaffold skill — project-local demo generation
 
 Priority: medium
-Status: ready
+Status: done
 Estimate: M
 
 ## Goal
@@ -26,9 +26,18 @@ Same pattern as QA scaffold (see 008):
 3. Write project-local demo skill with app-specific capture methods
 
 ## Oracle
-- [ ] `/harness scaffold demo` in a web app repo produces GIF-focused demo skill
-- [ ] `/harness scaffold demo` in a CLI repo produces terminal recording demo skill
-- [ ] Generated skill knows the app's key features and how to capture them
+- [x] `/harness scaffold demo` in a web app repo produces GIF-focused demo skill
+- [x] `/harness scaffold demo` in a CLI repo produces terminal recording demo skill
+- [x] Generated skill knows the app's key features and how to capture them
 
 ## Depends On
-- 008-scaffold-qa-skill (shared scaffold infrastructure in /harness)
+- 008-scaffold-qa-skill (shared scaffold infrastructure in /harness) — done
+
+## What Was Built
+- `skills/harness/references/scaffold-demo.md` (196 lines) — Demo scaffold template
+  following the same three-phase pattern as QA scaffold (Investigate → Design → Deliver).
+  Three investigators (App Mapper, Feature Scout, Tooling Scout), design conversation
+  guide with artifact strategy table (web→GIF, CLI→terminal, API→cURL, library→test diff),
+  generated SKILL.md template with Planner→Implementer→Critic workflow, capture plan
+  reference template, and quality gates checklist.
+- `skills/harness/SKILL.md` — Updated scaffold dispatch to include `demo` alongside `qa`.

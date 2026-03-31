@@ -262,7 +262,7 @@ Generated artifacts are committed to git, never gitignored.
 The scaffold loads a skill-specific template from `references/scaffold-<name>.md`.
 If the template doesn't exist, error with available templates.
 
-Currently supported: `qa` (see `references/scaffold-qa.md`).
+Currently supported: `qa` (see `references/scaffold-qa.md`), `demo` (see `references/scaffold-demo.md`).
 
 ### Quality Bar
 
