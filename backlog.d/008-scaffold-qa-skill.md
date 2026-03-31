@@ -1,7 +1,7 @@
 # QA as a scaffold skill — project-local QA generation
 
 Priority: medium
-Status: ready
+Status: in-progress
 Estimate: L
 
 ## Goal
