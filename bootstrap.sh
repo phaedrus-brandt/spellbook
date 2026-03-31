@@ -496,16 +496,13 @@ if [ "$installed" -eq 0 ]; then
   installed=1
 fi
 
-# --- Git hooks: install into spellbook repo itself ---
-if [ -n "$SPELLBOOK" ] && [ -d "$SPELLBOOK/.git/hooks" ] && [ -d "$SPELLBOOK/git-hooks" ]; then
-  info "Installing git hooks..."
-  for hook in "$SPELLBOOK"/git-hooks/*; do
-    [ -f "$hook" ] || continue
-    name="$(basename "$hook")"
-    ln -sfn "$hook" "$SPELLBOOK/.git/hooks/$name"
-    ok "  $name"
-  done
-  echo
+# --- Git hooks: ensure core.hooksPath is set ---
+if [ -n "$SPELLBOOK" ] && [ -d "$SPELLBOOK/.githooks" ]; then
+  current_hooks_path="$(git -C "$SPELLBOOK" config core.hooksPath 2>/dev/null || true)"
+  if [ "$current_hooks_path" != ".githooks" ]; then
+    git -C "$SPELLBOOK" config core.hooksPath .githooks
+    info "Set core.hooksPath → .githooks"
+  fi
 fi
 
 ok "Done. Installed to $installed harness(es)."

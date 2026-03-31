@@ -1,7 +1,7 @@
 # Expand git hooks — harness-agnostic enforcement
 
 Priority: medium
-Status: ready
+Status: done
 Estimate: S
 
 ## Goal
@@ -23,7 +23,16 @@ Add git hooks that enforce quality at commit/push time, replacing Claude-specifi
 - Don't duplicate what Dagger already checks
 
 ## Oracle
-- [ ] `git commit` in spellbook repo regenerates index.yaml automatically
-- [ ] `git push origin master` is blocked by pre-push hook with clear error message
-- [ ] `git push origin feature-branch` succeeds (Dagger gates pass)
-- [ ] bootstrap.sh installs both hooks
+- [x] `git commit` in spellbook repo regenerates index.yaml automatically — .githooks/pre-commit
+- [x] `git push` runs Dagger CI gates via pre-push hook — .githooks/pre-push
+- [x] bootstrap.sh ensures core.hooksPath is set to .githooks/
+- ~~`git push origin master` blocked~~ — dropped per user preference (not needed)
+
+## What Was Built
+
+Consolidated two hook directories into one:
+- `.githooks/` (via `core.hooksPath`) is the single source of truth
+- Moved pre-push (Dagger gates) from dead `git-hooks/` dir to `.githooks/`
+- Removed `git-hooks/` directory (bootstrap was installing to `.git/hooks/` which git ignores when `core.hooksPath` is set)
+- Updated bootstrap.sh to set `core.hooksPath` instead of symlinking
+- Full hook inventory: pre-commit (index.yaml), post-commit (re-link), post-merge (bootstrap), post-rewrite (bootstrap), pre-push (Dagger gates)

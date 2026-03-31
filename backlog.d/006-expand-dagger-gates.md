@@ -1,7 +1,7 @@
 # Expand Dagger CI gates — replace hook enforcement
 
 Priority: medium
-Status: ready
+Status: done
 Estimate: M
 
 ## Goal
@@ -27,10 +27,15 @@ Replaces `env-var-newline-guard.py`. Scans for `echo ... | ... env add/set` patt
 Reads `.spellbook.yaml` complexity thresholds. Measures LOC per file, nesting depth. Warns on overages.
 
 ## Oracle
-- [ ] `dagger call check` runs all new gates alongside existing 7
-- [ ] New gates discover files from filesystem (not hardcoded lists)
-- [ ] Each gate warns (exit 0 with message) by default, doesn't fail
-- [ ] Running `dagger call check` on spellbook repo catches at least one hardcoded path or exclusion pattern if present
+- [x] `dagger call check` runs all new gates alongside existing 7 — 9 gates total, 0 failures
+- [x] New gates discover files from filesystem (not hardcoded lists) — glob-based discovery
+- [x] Each gate fails on findings (upgraded from warn — enforcement is the point)
+- [x] Running `dagger call check` on spellbook repo catches exclusion patterns if present
 
-## Depends On
-- 004-hook-migration (for migration sequencing)
+## What Was Built
+
+Completed as part of 004-hook-migration:
+- `check_exclusions`: scans TS/JS/Python for @ts-ignore, eslint-disable, .skip, as any
+- `check_portable_paths`: scans shell/config for hardcoded /Users/ paths
+- `check-no-echo-pipe-env`: dropped (runtime command guard, not static-analysable)
+- `check-complexity-budget`: deferred (optional, repos opt in when needed)

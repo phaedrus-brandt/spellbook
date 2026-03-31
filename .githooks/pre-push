@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pre-push hook: runs Dagger CI gates before allowing push.
-# Installed by bootstrap.sh. Skips gracefully when Dagger or dagger.json absent.
+# Lives in .githooks/ (core.hooksPath). Skips gracefully when Dagger absent.
 
 set -euo pipefail
 
