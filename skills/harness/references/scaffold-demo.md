@@ -123,11 +123,6 @@ argument-hint: "[feature|PR-number] [--format gif|screenshot|video] [upload]"
 
 [One-line description of what demo means for this project.]
 
-## Role
-
-Demo producer capturing evidence that [project] works. You create artifacts
-that prove features function correctly — not marketing material, but proof.
-
 ## Capture Methods
 
 | Feature | Method | Tool | Output |
@@ -154,15 +149,6 @@ Rules:
 - GIFs need real browser recording (not slideshow)
 - Target: GIFs < 5MB, PNGs < 500KB
 
-### 3. Validate
-
-Check every artifact:
-- Source validation: correct app, correct route
-- Before/after pairing: no orphaned screenshots
-- Text delta: before and after are visibly different
-- Coverage: all planned shots captured
-- Quality: GIFs have >10 frames, images are readable
-
 ### Upload
 
 [Upload strategy from design phase]
@@ -180,6 +166,7 @@ ffmpeg -y -i input.webm \
 
 - [App-specific gotchas from investigation]
 - Default-state evidence proves nothing — show the delta
+- GIFs must have >10 frames (not a slideshow) and be < 5MB
 - Self-grading is worthless — critic must inspect artifacts cold
 - WebM doesn't render in PR comments — convert to GIF
 - Never commit binary artifacts to the repo

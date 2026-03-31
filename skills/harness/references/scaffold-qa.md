@@ -139,17 +139,6 @@ argument-hint: "[url|route|PR-number]"
 
 [One-line description of what QA means for this project.]
 
-## Role
-
-QA engineer verifying that [project] works correctly for real users.
-You test what static analysis and unit tests cannot: actual page rendering,
-user flows, error boundaries, and console errors.
-
-## Objective
-
-Verify `$ARGUMENTS` works correctly for all critical user paths.
-Report pass/fail with evidence.
-
 ## Prerequisites
 
 - [Dev server is running / preview deployment exists]
@@ -159,10 +148,7 @@ Report pass/fail with evidence.
 ## Dev Server
 
 \`\`\`bash
-# Start dev server
 [dev command]
-# Verify it's running
-curl -s -o /dev/null -w "%{http_code}" http://localhost:[port]/
 \`\`\`
 
 ## Critical Paths
@@ -173,33 +159,11 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:[port]/
 | 2 | [route] | [specific checks] |
 | ... | ... | ... |
 
-For each path:
-1. Navigate to the URL
-2. Wait for page load (no loading spinner after 5s)
-3. Check for error states (error boundary, 500, blank page)
-4. Read console for errors
-5. Verify key elements are visible
-6. Capture evidence
-
 ## Interactive Flows (if PR touches these)
 
 | Flow | Steps |
 |------|-------|
 | [flow] | [specific steps for this app] |
-
-## Regression Checks
-
-- Check all routes touched by the PR's diff
-- If PR modifies a component used in multiple routes, check ALL routes using it
-- If PR touches data fetching, verify both loading and loaded states
-
-## Console Error Audit
-
-\`\`\`
-read_console_messages with pattern: "(Error|TypeError|ReferenceError|Failed|Unhandled)"
-\`\`\`
-
-Any unhandled runtime error = QA fail.
 
 ## Evidence
 
@@ -209,21 +173,18 @@ Evidence goes to \`/tmp/qa-[project-slug]/\`.
 
 ## Output
 
-Post results as a PR comment or report to the user:
 - Status: PASS / FAIL
 - Critical paths checklist
 - Console errors found
 - Evidence captured
 - Recommendation: ready to merge / needs fix
 
-## Failure Modes
+## Gotchas
 
 - [App-specific failure modes from investigation]
-- Skipping console/network checks (runtime errors hide behind working UI)
-- Testing only happy path (always test error states)
-
-## Anti-Patterns
-
+- Always check console for \`(Error|TypeError|ReferenceError|Failed|Unhandled)\` — runtime errors hide behind working UI
+- If PR modifies a shared component, check ALL routes using it
+- Test error states and loading states, not just happy paths
 - [Project-specific anti-patterns]
 ```
 
