@@ -1,7 +1,7 @@
 # Code review evolution — live verification + persistent scoring
 
 Priority: medium
-Status: ready
+Status: in-progress
 Estimate: M
 
 ## Goal
