@@ -109,7 +109,7 @@ The Deliver phase writes these files to `.claude/skills/demo/` in the target pro
 
 ```markdown
 ---
-name: [project]-demo
+name: demo
 description: |
   Generate demo artifacts for [project]. Captures [artifact types]
   for [key features].
