@@ -1,7 +1,7 @@
 # Skill invocation tracking
 
 Priority: medium
-Status: pending
+Status: done
 Estimate: S
 
 ## Goal

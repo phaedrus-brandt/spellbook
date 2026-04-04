@@ -1,7 +1,7 @@
 # Refactor /harness — extract scaffolds, router pattern, add audit mode
 
 Priority: high
-Status: in-progress
+Status: done
 Estimate: L
 
 ## Problem

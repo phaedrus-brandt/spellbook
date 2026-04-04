@@ -1,7 +1,7 @@
 # Mode-bloat lint gate — catch attention dilution early
 
 Priority: medium
-Status: ready
+Status: done
 Estimate: S
 
 ## Problem
