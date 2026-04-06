@@ -65,6 +65,10 @@ checkboxes), the contract is already done — skip.
 
 ### 4. Build
 
+**Before spawning builders:** Create a feature branch from the current branch
+(`git checkout -b <type>/<slug>`). Builders must never commit directly to
+master/main. If you forgot, create the branch after and cherry-pick.
+
 Spawn **builder** sub-agent(s) with the approved context packet and contract.
 
 For single-chunk work, spawn one builder with the full spec.
