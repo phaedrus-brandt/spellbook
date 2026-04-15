@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# /iterate Phase 1 entrypoint: dry-run orchestration of the outer loop.
+# /autopilot Phase 1 entrypoint: dry-run orchestration of the outer loop.
 #
-# Real mode (not implemented in Phase 1) shells out to /shape, /deliver,
-# /code-review, /qa, /deploy, /reflect. Dry-run walks all 9 phases and writes
-# one event per phase — this exists so contract #5 (≥ cycle.opened
+# Real mode (not implemented in Phase 1) shells out to /deliver, /deploy,
+# /monitor, /investigate, /reflect. Dry-run walks all phases and writes
+# one event per phase — this exists so the event contract (≥ cycle.opened
 # and cycle.closed in cycle.jsonl) is verifiable without burning model budget.
 #
 # Flags:
@@ -20,13 +20,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Anchor all relative paths (cycle dir, default lock path) to REPO_ROOT so
 # invocations from outside the repo can't corrupt a $PWD-shaped state tree.
-# Callers who override ITERATE_LOCK_PATH should pass an absolute path.
+# Callers who override AUTOPILOT_LOCK_PATH should pass an absolute path.
 cd "$REPO_ROOT"
 
 # shellcheck source=../../../scripts/lib/events.sh
 source "$REPO_ROOT/scripts/lib/events.sh"
-# shellcheck source=../../../scripts/lib/iterate_lock.sh
-source "$REPO_ROOT/scripts/lib/iterate_lock.sh"
+# shellcheck source=../../../scripts/lib/autopilot_lock.sh
+source "$REPO_ROOT/scripts/lib/autopilot_lock.sh"
 
 DRY_RUN=0
 MAX_CYCLES=1
@@ -40,13 +40,13 @@ ABANDON=""
 
 usage() {
   cat >&2 <<EOF
-/iterate — outer-loop workflow orchestrator (Phase 1)
+/autopilot — outer-loop workflow orchestrator (Phase 1)
 
-Usage: iterate.sh [--dry-run] [--max-cycles N] [--budget \$N]
+Usage: autopilot.sh [--dry-run] [--max-cycles N] [--budget \$N]
 
 Phase 1 supports --dry-run only in full end-to-end mode. Real mode shells
-out to /shape, /deliver, /code-review, /qa, /deploy, /reflect and will
-fail loudly if any is missing (no auto-scaffold in Phase 1).
+out to /deliver, /deploy, /monitor, /investigate, /reflect and will fail
+loudly if any is missing (no auto-scaffold in Phase 1).
 EOF
 }
 
@@ -59,26 +59,26 @@ while [ $# -gt 0 ]; do
     --resume)       RESUME="${2:?}"; shift 2 ;;
     --abandon)      ABANDON="${2:?}"; shift 2 ;;
     -h|--help)      usage; exit 0 ;;
-    *)              echo "iterate: unknown flag '$1'" >&2; usage; exit 2 ;;
+    *)              echo "autopilot: unknown flag '$1'" >&2; usage; exit 2 ;;
   esac
 done
 
 # Phase 2 guards — fail loud rather than silently ignore.
 if [ -n "$UNTIL" ]; then
-  echo "iterate: --until is Phase 2; not implemented" >&2; exit 2
+  echo "autopilot: --until is Phase 2; not implemented" >&2; exit 2
 fi
 if [ -n "$RESUME" ] || [ -n "$ABANDON" ]; then
-  echo "iterate: --resume/--abandon are Phase 2; not implemented" >&2; exit 2
+  echo "autopilot: --resume/--abandon are Phase 2; not implemented" >&2; exit 2
 fi
 
 # Phase 1 is strictly single-cycle. A multi-cycle outer loop would need to
 # either hold the lock across cycles (currently released between cycles, so
-# a second iterate could sneak in) or re-acquire it, neither of which is
+# a second autopilot could sneak in) or re-acquire it, neither of which is
 # implemented. Carmack cut: reject >1 loudly until Phase 2 wires the logic.
 # We keep --max-cycles and --budget in the parser so Phase 2 can flip this
 # guard without breaking any callers.
 if [ "$MAX_CYCLES" -ne 1 ]; then
-  echo "iterate: --max-cycles > 1 is Phase 2; not yet implemented" >&2
+  echo "autopilot: --max-cycles > 1 is Phase 2; not yet implemented" >&2
   exit 2
 fi
 
@@ -112,8 +112,8 @@ run_cycle() {
 
   # Acquire lock BEFORE materializing cycle dir — a failed acquire must not
   # orphan backlog.d/_cycles/<ulid>/ trees on disk.
-  if ! iterate_acquire "$cycle_id"; then
-    echo "iterate: could not acquire lock" >&2
+  if ! autopilot_acquire "$cycle_id"; then
+    echo "autopilot: could not acquire lock" >&2
     return 1
   fi
   mkdir -p "$cycle_dir/evidence"
@@ -122,17 +122,17 @@ run_cycle() {
   # an INT/TERM handler is to resume the script, not exit — we must exit
   # explicitly to honor the SKILL.md contract (SIGINT → 130, SIGTERM → 143).
   # shellcheck disable=SC2064  # we want $cycle_id expanded now
-  trap "iterate_release '$cycle_id'" EXIT
+  trap "autopilot_release '$cycle_id'" EXIT
   # shellcheck disable=SC2064
-  trap "iterate_release '$cycle_id'; exit 130" INT
+  trap "autopilot_release '$cycle_id'; exit 130" INT
   # shellcheck disable=SC2064
-  trap "iterate_release '$cycle_id'; exit 143" TERM
+  trap "autopilot_release '$cycle_id'; exit 143" TERM
 
-  # Test hook: if ITERATE_SIGINT_TEST_SLEEP is set, pause after acquire so
+  # Test hook: if AUTOPILOT_SIGINT_TEST_SLEEP is set, pause after acquire so
   # integration tests can reliably fire SIGINT against the cycle. No effect
   # in normal operation (env var unset).
-  if [ -n "${ITERATE_SIGINT_TEST_SLEEP:-}" ]; then
-    sleep "$ITERATE_SIGINT_TEST_SLEEP"
+  if [ -n "${AUTOPILOT_SIGINT_TEST_SLEEP:-}" ]; then
+    sleep "$AUTOPILOT_SIGINT_TEST_SLEEP"
   fi
 
   emit_event "$log" cycle.opened pick orchestrator \
@@ -141,6 +141,9 @@ run_cycle() {
   if [ "$DRY_RUN" -eq 1 ]; then
     # Walk phases 1-9 from 028 control flow. Each phase is a no-op that
     # writes a placeholder event so the full event trail is exercised.
+    # TODO(phase-2): replace inner-pipeline events (shape/build/review/ci/qa)
+    # with a single deliver.done event once /deliver composition lands and
+    # 028's "Drop inner-phase event kinds" step is executed.
     emit_event "$log" shape.done         shape   planner       '{"note":"dry-run"}'
     emit_event "$log" build.done         build   builder       '{"note":"dry-run"}'
     emit_event "$log" review.iter        review  critic        '{"note":"dry-run","iter":1}'
@@ -155,11 +158,11 @@ run_cycle() {
     # Phase 1 does not auto-scaffold missing skills (that's Phase 3), so if
     # any handler is missing we write phase.failed, release the lock via trap,
     # and exit non-zero.
-    echo "iterate: real mode not yet wired in Phase 1 — use --dry-run" >&2
+    echo "autopilot: real mode not yet wired in Phase 1 — use --dry-run" >&2
     emit_event "$log" phase.failed pick orchestrator \
       '{"note":"real mode unimplemented in Phase 1","reason":"phase-1-scope"}'
     emit_event "$log" cycle.closed close orchestrator '{"status":"aborted"}'
-    iterate_release "$cycle_id"
+    autopilot_release "$cycle_id"
     trap - EXIT INT TERM
     return 1
   fi
@@ -167,7 +170,7 @@ run_cycle() {
   emit_event "$log" cycle.closed close orchestrator \
     "{\"status\":\"closed\",\"cycle_id\":\"$cycle_id\"}"
 
-  iterate_release "$cycle_id"
+  autopilot_release "$cycle_id"
   trap - EXIT INT TERM
   echo "$cycle_id"
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Typed event log for /iterate cycles.
+# Typed event log for /autopilot cycles.
 # Each cycle owns a cycle.jsonl file; every phase boundary writes one event.
 # JSONL corruption breaks /reflect, so writes are locked and fsync'd.
 #
@@ -105,7 +105,7 @@ os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
 
 # Open O_APPEND so writes are atomic at the kernel level for small lines;
 # still take an exclusive flock to serialize with sibling writers across
-# processes (multiple /iterate instances would be a bug, but tests simulate
+# processes (multiple /autopilot instances would be a bug, but tests simulate
 # concurrent shells).
 fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
 try:

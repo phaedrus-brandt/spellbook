@@ -292,10 +292,10 @@ an oracle check.
    - [ ] `skills/reflect/references/tune-repo.md`
    - [ ] `skills/investigate/references/triage.md`
    - [ ] `skills/groom/references/git-bug-conventions.md`
-   - [ ] `skills/iterate/SKILL.md` — these get re-renamed to NEW `/autopilot`
-         meaning under 028; sequence so 032 flips "old `/autopilot`" refs to
-         `/deliver`, then 028 flips iterate refs to `/autopilot`
-   - [ ] `skills/iterate/scripts/iterate.sh` (comment strings)
+   - [x] `skills/autopilot/SKILL.md` (renamed from `skills/iterate/` under
+         028; 032 flipped "old `/autopilot`" refs to `/deliver`, then 028
+         flipped iterate refs to `/autopilot`)
+   - [x] `skills/autopilot/scripts/autopilot.sh` (comment strings)
 
    Drop entirely (no claims):
    - [ ] Remove `source scripts/lib/claims.sh` calls from new `skills/deliver/SKILL.md`

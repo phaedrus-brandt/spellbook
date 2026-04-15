@@ -1,5 +1,5 @@
 # Spellbook Index
-# Generated: 2026-04-15T21:58:49Z
+# Generated: 2026-04-15T22:16:41Z
 # Do not edit manually. Run: ./scripts/generate-index.sh
 
 skills:
@@ -11,6 +11,10 @@ skills:
     description: "Assess and improve codebase readiness for AI coding agents. Dispatches parallel subagents to evaluate style, testing, docs, architecture, CI, observability, security, and dev environment. Produces a s"
     source: first-party
     tags: [a,agents,ai,architecture,assess,ci,codebase,coding,dev,dispatches]
+  - name: autopilot
+    description: "Outer-loop delivery orchestrator. Composes cycles of /deliver → /deploy → /monitor → /investigate → /reflect, mutates the backlog, and emits harness suggestions to a branch. Inner loop is /del"
+    source: first-party
+    tags: [a,backlog,branch,composes,cycles,del,deliver,delivery,deploy,emits]
   - name: ci
     description: "Audit a repo's CI gates, strengthen what is weak, then drive the pipeline green. Owns confidence in correctness — lint, types, tests, coverage, secrets. Dagger-first. Never returns red without a str"
     source: first-party
@@ -51,10 +55,6 @@ skills:
     description: "Investigate, audit, triage, and fix. Systematic debugging, incident lifecycle, domain auditing, and issue logging. Four-phase protocol: root cause → pattern analysis → hypothesis test → fix. Use"
     source: first-party
     tags: [analysis,audit,auditing,cause,debugging,domain,fix,four-phase,hypothesis,incident]
-  - name: iterate
-    description: "Outer-loop orchestrator. Composes /shape, /deliver, /code-review, /qa, /deploy, /reflect into a closed delivery cycle. Picks a backlog item, ships it, reflects, updates the bucket, picks the next. Wri"
-    source: first-party
-    tags: [a,backlog,bucket,closed,code-review,composes,cycle,deliver,delivery,deploy]
   - name: model-research
     description: "Research, compare, and select LLM models for AI-powered apps and workflows. Finds latest models per family, verifies availability on target platform, compares pricing/benchmarks/tool-calling, produces"
     source: first-party

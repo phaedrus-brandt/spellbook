@@ -1,45 +1,45 @@
 #!/usr/bin/env bash
-# Single-instance lock for /iterate.
-# Lock file: .spellbook/iterate.lock
+# Single-instance lock for /autopilot.
+# Lock file: .spellbook/autopilot.lock
 # Content:   {"pid": <int>, "cycle_id": "<ulid>", "started_at": "<iso8601 UTC>"}
 #
-# Two /iterate processes in the same repo would race on event log + bucket
-# updates. We keep a filesystem lock (not a git ref) because it's machine-
-# local state, and we steal stale locks when the owning pid is dead so a
-# SIGKILL'd cycle doesn't wedge the repo forever.
+# Two /autopilot processes in the same worktree would race on event log +
+# bucket updates. We keep a filesystem lock (not a git ref) because it's
+# machine-local state, and we steal stale locks when the owning pid is dead
+# so a SIGKILL'd cycle doesn't wedge the worktree forever.
 #
 # Usage:
-#   source scripts/lib/iterate_lock.sh
-#   iterate_acquire <cycle_id>   # 0 on success, 1 if another live cycle holds it
-#   iterate_release <cycle_id>   # 0 on success (idempotent); 1 if cycle_id mismatch
+#   source scripts/lib/autopilot_lock.sh
+#   autopilot_acquire <cycle_id>   # 0 on success, 1 if another live cycle holds it
+#   autopilot_release <cycle_id>   # 0 on success (idempotent); 1 if cycle_id mismatch
 
-ITERATE_LOCK_PATH="${ITERATE_LOCK_PATH:-.spellbook/iterate.lock}"
+AUTOPILOT_LOCK_PATH="${AUTOPILOT_LOCK_PATH:-.spellbook/autopilot.lock}"
 
-# Acquire the iterate lock. Steals lock when owner pid is dead or content
+# Acquire the autopilot lock. Steals lock when owner pid is dead or content
 # is corrupt. Fails when owner pid is alive.
 # Atomicity: O_CREAT|O_EXCL creates the lock or fails; the kernel guarantees
 # exactly one creator across concurrent callers, eliminating the TOCTOU race
 # where two stealers both pass "kill -0" and both rename on top of each other.
 # Args: <cycle_id>
-iterate_acquire() {
+autopilot_acquire() {
   local cycle_id="$1"
   if [ -z "$cycle_id" ]; then
-    echo "iterate_acquire: cycle_id required" >&2
+    echo "autopilot_acquire: cycle_id required" >&2
     return 1
   fi
 
-  mkdir -p "$(dirname "$ITERATE_LOCK_PATH")"
+  mkdir -p "$(dirname "$AUTOPILOT_LOCK_PATH")"
 
-  ITERATE_LOCK_CYCLE_ID="$cycle_id" \
-  ITERATE_LOCK_PID="$$" \
-  ITERATE_LOCK_FILE="$ITERATE_LOCK_PATH" \
+  AUTOPILOT_LOCK_CYCLE_ID="$cycle_id" \
+  AUTOPILOT_LOCK_PID="$$" \
+  AUTOPILOT_LOCK_FILE="$AUTOPILOT_LOCK_PATH" \
   python3 <<'PYEOF'
 import errno, json, os, sys, time
 
-path = os.environ["ITERATE_LOCK_FILE"]
+path = os.environ["AUTOPILOT_LOCK_FILE"]
 payload = {
-    "pid": int(os.environ["ITERATE_LOCK_PID"]),
-    "cycle_id": os.environ["ITERATE_LOCK_CYCLE_ID"],
+    "pid": int(os.environ["AUTOPILOT_LOCK_PID"]),
+    "cycle_id": os.environ["AUTOPILOT_LOCK_CYCLE_ID"],
     "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
 }
 
@@ -83,7 +83,7 @@ if write_fresh():
 # Lock exists. If owner is alive, refuse.
 alive, pid = owner_alive()
 if alive:
-    print(f"iterate_acquire: lock held by live pid {pid}", file=sys.stderr)
+    print(f"autopilot_acquire: lock held by live pid {pid}", file=sys.stderr)
     sys.exit(1)
 
 # Stale or corrupt. Attempt ONE steal: unlink then O_EXCL retry. If another
@@ -101,42 +101,42 @@ if write_fresh():
 # Someone else won the race to recreate. If they're alive, they hold it.
 alive, pid = owner_alive()
 if alive:
-    print(f"iterate_acquire: lost steal race to live pid {pid}", file=sys.stderr)
+    print(f"autopilot_acquire: lost steal race to live pid {pid}", file=sys.stderr)
     sys.exit(1)
 # They created it then died before we could check — conservative: refuse
 # rather than loop. Caller can retry.
-print("iterate_acquire: lost steal race", file=sys.stderr)
+print("autopilot_acquire: lost steal race", file=sys.stderr)
 sys.exit(1)
 PYEOF
 }
 
-# Release the iterate lock. Fully idempotent: any of (a) missing lock,
+# Release the autopilot lock. Fully idempotent: any of (a) missing lock,
 # (b) cycle_id mismatch, (c) successful removal returns 0. The mismatch case
 # is a no-op — a late trap from a finished cycle must not wipe a successor's
 # lock. Callers never need `|| true`.
 # Args: <cycle_id>
-iterate_release() {
+autopilot_release() {
   local cycle_id="$1"
   if [ -z "$cycle_id" ]; then
-    echo "iterate_release: cycle_id required" >&2
+    echo "autopilot_release: cycle_id required" >&2
     return 1
   fi
-  if [ ! -e "$ITERATE_LOCK_PATH" ]; then
+  if [ ! -e "$AUTOPILOT_LOCK_PATH" ]; then
     return 0
   fi
   local recorded
-  recorded="$(ITERATE_LOCK_FILE="$ITERATE_LOCK_PATH" python3 -c '
+  recorded="$(AUTOPILOT_LOCK_FILE="$AUTOPILOT_LOCK_PATH" python3 -c '
 import json, os
 try:
-    print(json.load(open(os.environ["ITERATE_LOCK_FILE"])).get("cycle_id", ""))
+    print(json.load(open(os.environ["AUTOPILOT_LOCK_FILE"])).get("cycle_id", ""))
 except Exception:
     print("")
 ' 2>/dev/null)"
   if [ "$recorded" != "$cycle_id" ]; then
     # Observability: log the skip but do not fail. Lock belongs to another
     # cycle (or is corrupt) — not ours to delete.
-    echo "iterate_release: no-op (lock cycle=$recorded, asked=$cycle_id)" >&2
+    echo "autopilot_release: no-op (lock cycle=$recorded, asked=$cycle_id)" >&2
     return 0
   fi
-  rm -f "$ITERATE_LOCK_PATH"
+  rm -f "$AUTOPILOT_LOCK_PATH"
 }

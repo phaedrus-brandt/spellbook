@@ -115,7 +115,7 @@ the packet explicitly says so.
 
 ## What /implement does NOT do
 
-- Pick tickets (caller's job, or `/deliver` / `/iterate`)
+- Pick tickets (caller's job, or `/deliver` / `/autopilot`)
 - Shape or re-shape specs (→ `/shape`)
 - Code review (→ `/code-review`)
 - QA against the running app (→ `/qa`)

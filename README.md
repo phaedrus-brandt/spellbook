@@ -20,6 +20,7 @@ point your harnesses at a specific checkout, set `SPELLBOOK_DIR=/path/to/spellbo
 | Skill | Purpose |
 |-------|---------|
 | `/deliver` | Inner-loop composer: ticket → merge-ready (shape → implement → review+ci+refactor+qa) |
+| `/autopilot` | Outer-loop orchestrator: cycles of /deliver → /deploy → /monitor → /reflect |
 | `/code-review` | Parallel multi-agent review, auto-fix loop |
 | `/investigate` | Investigate, triage, fix |
 | `/groom` | Backlog management, brainstorming, rethink, scaffold |
@@ -38,6 +39,8 @@ point your harnesses at a specific checkout, set `SPELLBOOK_DIR=/path/to/spellbo
 
 ```
 backlog.d/ → /groom → /shape → /deliver → ship
+                              └─ /autopilot (outer loop cycles:
+                                  /deliver → /deploy → /monitor → /reflect → next)
 ```
 
 ## Structure

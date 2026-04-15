@@ -34,7 +34,7 @@ branch). Optional `--env` (default from repo config). Optional
 
 **Output:** a deploy receipt (schema below) emitted to stdout as JSON
 and appended to the cycle manifest if one exists
-(`.spellbook/cycle-manifest.json`, see `/iterate`).
+(`.spellbook/cycle-manifest.json`, see `/autopilot`).
 
 **Stops at:** target reports healthy (platform-native healthcheck OR
 configured `healthcheck` URL returns 2xx within `rollback_grace_seconds`).
@@ -184,7 +184,7 @@ containing `bootstrap.sh` AND `skills/` AND no `.spellbook/deploy.yaml`.
 - **Log firehose:** platform deploy logs can be thousands of lines. The
   recipe in `references/targets.md` specifies a log tail budget; do not
   dump full logs into the receipt.
-- **Outer-loop re-entry:** `/iterate` may call `/deploy` on every cycle.
+- **Outer-loop re-entry:** `/autopilot` may call `/deploy` on every cycle.
   The no-op path must be fast (< 5s) and side-effect-free.
 - **Interactive prompts in CI:** when repo config is missing and the
   invocation is non-interactive (no TTY), abort with instructions

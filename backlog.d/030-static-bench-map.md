@@ -9,13 +9,13 @@ Estimate: S
 Replace the hardcoded four-bench selection in `/code-review` (critic,
 ousterhout, carmack, grug, beck — always the same four) with a static
 path-glob map that selects 3-5 reviewers based on diff content. Deeper,
-greppable, eval-able. Independently valuable without `/iterate`.
+greppable, eval-able. Independently valuable without `/autopilot`.
 
 ## Why Now
 
 Split out of 028 during 2026-04-14 grooming. The bench-map refactor is
 useful on its own — every `/code-review` run improves once specialized
-reviewers fire on relevant diffs. Doesn't need `/iterate` to deliver value.
+reviewers fire on relevant diffs. Doesn't need `/autopilot` to deliver value.
 
 ## Why Not a Classifier
 
@@ -72,5 +72,5 @@ selected bench.
 
 ## Related
 
-- Split out of 028 (`/iterate`) during grooming
-- Unblocks: richer `/code-review` without waiting for `/iterate` MVP
+- Split out of 028 (`/autopilot`) during grooming
+- Unblocks: richer `/code-review` without waiting for `/autopilot` MVP
