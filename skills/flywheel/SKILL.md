@@ -1,11 +1,13 @@
 ---
 name: flywheel
 description: |
-  Outer-loop delivery orchestrator. Composes cycles of /deliver → /deploy →
-  /monitor → /diagnose → /reflect, mutates the backlog, and emits harness
-  suggestions to a branch. Inner loop is /deliver (one ticket → merge-ready,
-  a black box here). Outer loop is this: continuous, unattended, budgeted.
-  Every run ends with a tight shipping brief plus a full /reflect session.
+  Outer-loop shipping orchestrator. Composes cycles of /deliver → landing →
+  /deploy → /monitor → /diagnose → /reflect, mutates the backlog, and emits
+  harness suggestions to a branch. Inner loop is /deliver (one ticket →
+  merge-ready, a black box here). Outer loop owns the final mile: get the
+  branch clean and landed, deploy the landed sha, watch it, reflect, and apply
+  the learnings before closing the cycle. Every run ends with a tight shipping
+  brief plus a full /reflect session.
   Use when: continuous delivery, "flywheel", "run the outer loop",
   "next N items", "overnight queue", "outer loop", "cycle".
   Trigger: /flywheel.
@@ -14,15 +16,21 @@ argument-hint: "[--max-cycles N] [--budget $N] [--unattended] [--dry-run]"
 
 # /flywheel
 
-Outer-loop delivery orchestrator. `/deliver` takes one item to merge-ready
-and exits (inner loop). `/flywheel` composes cycles of `/deliver` +
-`/deploy` + `/monitor` + `/diagnose` + `/reflect` and runs N of them.
+Outer-loop shipping orchestrator. `/deliver` takes one item to merge-ready
+and exits (inner loop). `/flywheel` takes that merge-ready branch through the
+final mile: landing, deployment, monitoring, reflection, and application of
+the reflect outputs. It runs N of those cycles.
 
 ## Invariants
 
 - Delegate each phase to its named skill; never inline phase logic here.
-- Treat `/deliver` as an opaque merge-readiness step. Consume exit code + receipt; escalate disagreement.
+- Treat `/deliver` as an opaque merge-readiness step. `/flywheel` does not
+  stop there; it owns the final mile after `/deliver` succeeds.
+- Land the change on the default branch before deploy. Use `/settle`, `/land`,
+  or explicit repo-native landing; never deploy from an unlanded feature branch.
 - Treat the event log as the source of truth — every phase boundary writes an event via `flywheel.sh emit`.
+- Apply the reflect outputs before closing the cycle. Backlog mutation and
+  harness suggestions are part of the success path, not optional cleanup.
 
 ## Real Mode — Cycle Orchestration
 
@@ -38,39 +46,50 @@ provides state primitives; the model provides judgment.
    If EMPTY → close noop, exit 0.
 
 3. Invoke /deliver $item --state-dir backlog.d/_cycles/$cycle_id/evidence/deliver/
-   - On exit 0: read receipt.json; emit deliver.done with cost_usd, branch, head_sha.
+   - On exit 0: read receipt.json and capture the merge-ready branch + head sha.
+   - On non-zero: emit phase.failed, close aborted, STOP this cycle.
+
+4. Invoke the landing phase (`/settle`, `/land`, or explicit repo-native landing):
+   - Run the final-mile clean loop until the branch is actually clean:
+     Dagger/local CI, review settlement, refactor, QA, and any resulting fix loops.
+   - Land the change on the default branch using repo policy.
+   - Default policy for single-ticket backlog branches is squash merge unless the
+     repo has a stronger rule.
+   - On success: emit deliver.done with cost_usd, branch, head_sha, landed_sha,
+     and merge_strategy.
    - On non-zero: emit phase.failed, close aborted, STOP this cycle.
    bash skills/flywheel/scripts/flywheel.sh emit $cycle_id deliver.done \
-     deliver builder '{"cost_usd":<x>,"branch":"<b>","head_sha":"<s>"}'
+     deliver builder '{"cost_usd":<x>,"branch":"<b>","head_sha":"<s>","landed_sha":"<l>","merge_strategy":"squash"}'
 
-4. Invoke /deploy; parse receipt; emit:
+5. Invoke /deploy against the landed sha; parse receipt; emit:
    bash skills/flywheel/scripts/flywheel.sh emit $cycle_id deploy.done \
      deploy deployer '<receipt_json>'
 
-5. Invoke /monitor; consume its one terminal event.
+6. Invoke /monitor; consume its one terminal event.
    - monitor.done → proceed to step 7.
-   - monitor.alert → go to step 6.
+   - monitor.alert → go to step 7.
    bash skills/flywheel/scripts/flywheel.sh emit $cycle_id monitor.done \
      monitor monitor '<payload>'
 
-6. (If alert) Invoke /diagnose; emit:
+7. (If alert) Invoke /diagnose; emit:
    bash skills/flywheel/scripts/flywheel.sh emit $cycle_id triage.done \
      triage diagnostician '<payload>'
 
-7. Invoke /reflect cycle $cycle_id; emit:
+8. Invoke /reflect cycle $cycle_id; emit:
    bash skills/flywheel/scripts/flywheel.sh emit $cycle_id reflect.done \
      reflect reflector '<payload_with_new_items>'
 
-8. Update bucket (shipped or failed):
+9. Apply reflect outputs:
+   - update bucket (shipped or failed)
    bash skills/flywheel/scripts/flywheel.sh update-bucket $cycle_id shipped
 
-9. Suggest harness changes:
+10. Suggest or apply harness changes:
    bash skills/flywheel/scripts/flywheel.sh update-harness $cycle_id
 
-10. Close cycle:
+11. Close cycle:
     bash skills/flywheel/scripts/flywheel.sh close $cycle_id closed
 
-11. If --max-cycles > 1 and budget remains and no stop predicate triggered:
+12. If --max-cycles > 1 and budget remains and no stop predicate triggered:
     GOTO 1.
 ```
 
@@ -123,7 +142,7 @@ Closed enum — 12 kinds. Unknown kinds fail at emit time.
 | Kind | When |
 |------|------|
 | `cycle.opened` | Cycle starts (new-cycle) |
-| `deliver.done` | /deliver exits 0 |
+| `deliver.done` | Merge-ready branch has been settled and landed |
 | `deploy.done` | /deploy completes |
 | `monitor.done` | /monitor: clean |
 | `monitor.alert` | /monitor: regression detected |
@@ -167,7 +186,12 @@ For multi-cycle runs: one brief per cycle, then one aggregate summary.
 - **update-bucket is idempotent.** Guards every mutation with cycle_id grep.
   Re-running is safe; it detects the marker and no-ops.
 - **harness.suggested writes to a branch only** (never main). Branch mechanics not yet implemented; currently emits a placeholder event.
-- **Never auto-merge.** `/flywheel` never opens, approves, or merges a PR.
+- **`/flywheel` is not `/deliver`.** Merge-ready is an intermediate state. A
+  successful cycle lands the change before deploy.
+- **Landing is explicit, not implicit.** Use repo policy. Default to squash for
+  one-ticket feature branches unless repo guidance overrides it.
+- **Library repos still land.** If no deploy target exists, deploy/monitor may
+  become explicit no-ops, but landing and reflect still happen.
 - **Paths anchor to REPO_ROOT.** flywheel.sh cds to the repo root on startup.
   Override FLYWHEEL_LOCK_PATH with an absolute path.
 

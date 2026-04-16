@@ -3,8 +3,10 @@ name: settle
 description: |
   Unblock, polish, and merge. Works in two modes:
   GitHub mode (PR exists): fix CI/conflicts/reviews, polish, refactor, land PR.
-  Git-native mode (no PR): use verdict refs, Dagger CI, agent swarm review.
-  /land alias: validate verdict ref, run Dagger, merge branch.
+  Git-native mode (no PR): use verdict refs, Dagger CI, agent swarm review,
+  and land the branch.
+  /land alias: validate verdict ref, run Dagger, and land the branch using
+  repo policy (default: squash single-ticket branches).
   Use when: PR is blocked, CI red, review comments open, "land this",
   "get this mergeable", "fix and polish", "unblock", "clean up",
   "make this merge-ready", "address reviews", "fix CI", "land this branch".
@@ -45,9 +47,10 @@ Detection sequence:
 3. Otherwise → git-native mode
 
 When invoked as `/land <branch>`, always use git-native mode regardless of
-whether a PR exists. `/land` delegates to `scripts/land.sh`, which validates
-the verdict ref (must exist and point at HEAD), rejects `dont-ship` verdicts,
-runs Dagger CI when available, and merges `--no-ff` to master.
+whether a PR exists. `/land` validates the verdict ref (must exist and point
+at HEAD), rejects `dont-ship` verdicts, runs Dagger CI when available, and
+lands the branch directly. Default landing policy is squash merge for
+single-ticket feature branches unless repo guidance says otherwise.
 `SPELLBOOK_NO_REVIEW=1` bypasses the verdict gate for emergencies.
 
 ## Objective
@@ -204,7 +207,8 @@ When settlement needs screenshots, videos, logs, or walkthrough proof:
 - Refactoring without verifying behavior is preserved
 - Skipping refactor because "it works"
 - Posting "PR Unblocked" while async reviewers can still add findings
-- Merging the PR yourself — your job ends at merge-ready. Never call `gh pr merge`. The human decides when to merge.
+- Merging from plain `/settle` — `/settle` ends at merge-ready. Use `/land`
+  when the task is to land the branch.
 - **Git-native mode: merging without a verdict ref.** Always validate via
   `verdict_validate` before merging. No verdict = no merge.
 
