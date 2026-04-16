@@ -133,6 +133,7 @@ Full protocol: `references/durability.md`.
   re-shape. Do not spin.
 - **Skipping shape.** Building without a context packet yields plausible
   garbage. If the item has no oracle, `/shape` runs first. Always.
+- **Review without verdict = dirty.** If `/code-review` runs but no `refs/verdicts/<branch>` points at HEAD afterwards, treat the review phase as failed.
 - **Merging.** Never. End-state is merge-ready, not merged.
 
 ## References
