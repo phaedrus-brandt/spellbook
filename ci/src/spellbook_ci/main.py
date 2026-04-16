@@ -103,7 +103,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
             Doc("Repo source directory"),
         ],
     ) -> str:
@@ -126,7 +126,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Run shellcheck on all bash scripts (errors only)."""
@@ -147,7 +147,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Syntax-check all Python files via py_compile."""
@@ -168,7 +168,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Validate SKILL.md and agent frontmatter: required fields, line limits."""
@@ -184,7 +184,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Verify index.yaml matches what generate-index.sh would produce."""
@@ -204,7 +204,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Verify vendored copies match their canonical sources."""
@@ -220,7 +220,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Run Bun tests for the research skill."""
@@ -239,7 +239,7 @@ class SpellbookCi:
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Scan source files for exclusion patterns (@ts-ignore, .skip, eslint-disable, etc.)."""
@@ -294,7 +294,7 @@ print('No exclusion patterns found.')
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Scan shell scripts and configs for hardcoded user home paths."""
@@ -343,7 +343,7 @@ print('No hardcoded user paths found.')
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Forbid inlined phase-skill internals in skills/deliver/SKILL.md.
@@ -409,7 +409,7 @@ print(f'{TARGET}: composition clean (no inlined-phase calls).')
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
         ],
     ) -> str:
         """Regression guard: forbid claim-coordination primitives under skills/.
@@ -466,7 +466,7 @@ print('skills/: no claims primitives found.')
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
             Doc("Repo source directory"),
         ],
     ) -> str:
@@ -526,7 +526,7 @@ print('skills/: no claims primitives found.')
         source: Annotated[
             dagger.Directory,
             DefaultPath("/"),
-            Ignore([".git", "__pycache__", ".venv", "ci"]),
+            Ignore([".git", "__pycache__", ".venv", "ci", "skills/.external"]),
             Doc("Repo source directory"),
         ],
         model: Annotated[str, Doc("LLM model for the repair agent")] = "gpt-4.1",
