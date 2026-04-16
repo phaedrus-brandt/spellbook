@@ -13,15 +13,20 @@
 # Closed enum of known event kinds. Writes with unknown kinds MUST fail —
 # consumers (reflect, bucket-scorer, harness-tuner) key on `kind`, and
 # silent drift produces ghost analytics.
+#
+# Phase 2 kinds (028): inner-pipeline events (shape.done, build.done,
+# review.iter, ci.done, qa.done) moved inside /deliver; outer loop sees
+# one deliver.done per cycle. Added: deliver.done, monitor.done,
+# monitor.alert, triage.done, bucket.updated.
 EVENT_KINDS=(
   cycle.opened
-  shape.done
-  build.done
-  review.iter
-  ci.done
-  qa.done
+  deliver.done
   deploy.done
+  monitor.done
+  monitor.alert
+  triage.done
   reflect.done
+  bucket.updated
   harness.suggested
   phase.failed
   budget.exhausted

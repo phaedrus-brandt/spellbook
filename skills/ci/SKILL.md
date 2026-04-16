@@ -3,10 +3,11 @@ name: ci
 description: |
   Audit a repo's CI gates, strengthen what is weak, then drive the pipeline
   green. Owns confidence in correctness — lint, types, tests, coverage,
-  secrets. Dagger is the canonical pipeline owner; absence is a blocking
-  audit finding. Never returns red without a structured diagnosis.
+  secrets. Dagger is the canonical pipeline owner; absence is auto-scaffolded,
+  not escalated. Acts on its assessment; never returns a report where action
+  would suffice. Never returns red without a structured diagnosis.
   Bounded self-heal: auto-fix lint/format, regenerate lockfiles, retry
-  flakes. Escalates algorithm/logic failures to the human.
+  flakes. Escalates only genuine algorithm/logic failures.
   Use when: "run ci", "check ci", "fix ci", "audit ci", "is ci passing",
   "run the gates", "dagger check", "why is ci failing", "strengthen ci",
   "tighten ci", "ci is red", "gates failing".
@@ -44,19 +45,29 @@ You are the executive orchestrator.
 
 1. **Audit before run.** A weak pipeline passing is worse than a strong
    one failing. Inventory coverage before trusting green.
-2. **Dagger-mandatory.** Missing `dagger.json` is a critical audit gap —
-   block green until scaffolded. Gates run via `dagger call <function>`
-   only. Raw `npm run lint` / `pytest` / `go test` etc. are what GHA
-   replaced, not what replaces GHA — they bypass the hermetic-container
-   contract. CI providers (GHA, CircleCI, etc.) must be thin wrappers
-   that shell out to `dagger call check`, never the authoritative gate
-   owner. Agent-first, local-first, provider-independent.
-3. **Fix-until-green on self-healable failures.** Don't report red and
+2. **Dagger-mandatory, auto-scaffolded.** Missing `dagger.json` is a gap
+   the skill closes itself, not a blocker that halts work. Scaffold a
+   TypeScript Dagger module, fold every existing gate into `check()`,
+   thin the CI provider (GHA, CircleCI, etc.) to a single `dagger call check`
+   step, and update pre-push hooks to match. Raw `npm run lint` / `pytest`
+   / `go test` etc. are what GHA replaced, not what replaces GHA — they
+   bypass the hermetic-container contract. CI providers must be thin
+   wrappers that shell out to `dagger call check`, never the authoritative
+   gate owner. Agent-first, local-first, provider-independent.
+3. **Act, do not propose.** The skill has executive authority within its
+   domain: mechanical strengthenings (adding missing gates, wiring
+   uncovered scripts, consolidating duplicate workflows, hardening
+   thresholds upward, scaffolding Dagger) are applied directly. Do NOT
+   emit "proposals" or "diff previews" awaiting approval. Only escalate
+   when the strengthening is a genuine product decision (e.g. disabling
+   a currently-green test, materially changing scope, or a tradeoff
+   the code alone cannot resolve).
+4. **Fix-until-green on self-healable failures.** Don't report red and
    exit. Either fix or produce a precise diagnosis the human can act on.
-4. **No quality lowering, ever.** Thresholds, lint rules, type strictness,
+5. **No quality lowering, ever.** Thresholds, lint rules, type strictness,
    coverage floors are load-bearing walls. Raising the floor is fine;
    lowering it to make CI pass is forbidden.
-5. **Bounded self-heal.** See `references/self-heal.md` for the fix-vs-
+6. **Bounded self-heal.** See `references/self-heal.md` for the fix-vs-
    escalate decision. Algorithm and logic failures escalate.
 
 ## Process
@@ -64,9 +75,11 @@ You are the executive orchestrator.
 ### Phase 1 — Audit (skip if `--run-only`)
 
 Read `references/audit.md` for the full audit rubric. Inventory in parallel.
-**Pipeline presence is the first gate and it is blocking** — if Dagger is
-absent, stop, propose scaffolding, wait for approval; no later check can
-compensate.
+**Pipeline presence is the first gate.** If Dagger is absent, scaffold it
+inline — do not stop, do not wait for approval. Scaffolding Dagger is
+mechanical (`dagger init --sdk=typescript --source=.dagger`, fold existing
+gates into `check()`, thin the GHA/CircleCI provider to a single
+`dagger call check` step). The skill owns this.
 
 - **Pipeline presence (blocking):** `dagger.json` / `.dagger/` exists?
   Entrypoint reachable? (`dagger functions` lists `check`?) Missing = HIGH,
@@ -95,9 +108,14 @@ Emit a structured audit report:
 | secrets scan   | gap    | high     | Add gitleaks gate               |
 ```
 
-For each gap: propose remediation with a diff preview. User approves or
-defers per-item. Approved strengthenings are applied as commits before
-Phase 2. Deferred items become backlog entries.
+For each gap, apply the mechanical remediation directly. Do NOT emit
+"proposals" awaiting approval. Mechanical strengthenings include:
+adding a missing lint/typecheck/coverage/secrets gate, wiring new
+scripts into the bash-syntax step, consolidating duplicate workflows,
+raising thresholds upward when the current code already passes a higher
+bar, and scaffolding Dagger. Escalate only when the strengthening would
+disable a currently-green test, materially change scope, or encode a
+product decision the code alone cannot resolve.
 
 If audit finds no gaps worth fixing, say so and proceed.
 
