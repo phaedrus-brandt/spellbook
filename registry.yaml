@@ -17,13 +17,23 @@
 #                                        SKILL.md per subdir of skills_path.
 #   include:       [name, name, …]       optional allowlist of skill dir names.
 #   exclude:       [name, name, …]       optional blocklist.
-#   alias_prefix:  "prefix-"             optional. Prepended to every alias from
-#                                        this source (use to resolve collisions).
+#   alias_prefix:  "prefix-"             REQUIRED for non-default sources. Prepended
+#                                        to every alias to avoid cross-source
+#                                        collisions. Convention: short source tag
+#                                        (e.g. "anthropic-", "gstack-", "vercel-").
 #   allow_floating: true                 optional. Permit a non-immutable ref
 #                                        (main/HEAD/branch). Default: refuse.
 #   embeddings:    true | false          default true. Include in embeddings index.
 #   active:        true | false          default true. false = declared but skipped
 #                                        by sync-external.sh. Use for "defer" sources.
+#
+# ALIAS_PREFIX DOCTRINE
+# Every non-default source MUST declare alias_prefix. External libraries have
+# heterogeneous naming conventions and silent collisions are load-bearing bugs.
+# The prefix scopes the source's namespace: e.g. gstack's `office-hours` becomes
+# `gstack-office-hours`, invoked as `/gstack-office-hours`. Two sources may share
+# a prefix only if their skill name sets are provably disjoint (e.g. the two
+# vercel-labs repos share `vercel-`). Same prefix + same skill name = fatal at sync.
 
 sources:
   - repo: phrazzld/spellbook
@@ -32,32 +42,103 @@ sources:
     skills_path: skills
 
   # Anthropic official skills. Curate via include: per workflow need.
-  # frontend-design is already loaded globally — exclude to avoid dup.
+  # frontend-design ships bundled with Claude Code globally — exclude to avoid dup.
   - repo: anthropics/skills
     ref: main
     layout: flat
     skills_path: skills
+    alias_prefix: "anthropic-"
     exclude: [frontend-design]
     allow_floating: true  # TODO: pin after first successful sync writes resolved sha here.
 
-  # Vercel Labs curated agent skills.
+  # Vercel Labs curated agent skills — React / web-design primitives.
   - repo: vercel-labs/agent-skills
     ref: main
     layout: flat
     skills_path: skills
+    alias_prefix: "vercel-"
     include:
       - react-best-practices
       - web-design-guidelines
-      - react-native-guidelines
+      - react-native-skills
       - react-view-transitions
       - composition-patterns
     allow_floating: true  # TODO: pin after first sync.
+
+  # Vercel Labs agent-browser — browser automation primitives.
+  # Shares alias_prefix "vercel-" with agent-skills; skill names are disjoint.
+  - repo: vercel-labs/agent-browser
+    ref: main
+    pin: 4cc6ca40b76a590bb06d1ec5abc16d27bb7d43c0
+    layout: flat
+    skills_path: skills
+    alias_prefix: "vercel-"
+    include: [agent-browser]
+
+  # Same repo, second entry — `dogfood` skill lives under `skill-data/`, not
+  # `skills/`. sync-external.sh only scans one path per entry, so we split.
+  - repo: vercel-labs/agent-browser
+    ref: main
+    pin: 4cc6ca40b76a590bb06d1ec5abc16d27bb7d43c0
+    layout: flat
+    skills_path: skill-data
+    alias_prefix: "vercel-"
+    include: [dogfood]
+
+  # JuliusBrussee/caveman — terse-output token compression ("few token do trick").
+  # Sibling skills (caveman-commit, caveman-review, compress) intentionally
+  # omitted; the base `caveman` skill is the high-leverage one. Revisit if
+  # the others accrete evidence.
+  - repo: JuliusBrussee/caveman
+    ref: main
+    pin: c2ed24b3e5d412cd0c25197b2bc9af587621fd99
+    layout: flat
+    skills_path: skills
+    alias_prefix: "julius-"
+    include: [caveman]
+
+  # Gary Tan's gstack — dialectical product/planning skills (YC-partner style).
+  #
+  # CONTAINMENT CAVEAT: gstack hardcodes `~/.claude/skills/gstack/bin/...` in
+  # ~1,400 places and expects a global `gstack` CLI install via `bin/setup`.
+  # Skills NOT in the include list below depend on that bin/ infrastructure
+  # (browse daemon, Chromium extension, QA runners) and will silently no-op
+  # when copied to .external/ without the native install. The included subset
+  # is prose-heavy; bin/ failures are swallowed in non-critical paths.
+  #
+  # For the doctrine-critical patterns (plan-ceo-review, office-hours), see
+  # the spellbook-native reimplementations at skills/ceo-review/ and
+  # skills/office-hours/ — those are the canonical versions. These gstack-*
+  # aliases preserve Gary's originals for cross-reference and comparison.
+  - repo: garrytan/gstack
+    ref: main
+    pin: b805aa0113040fb78228068ce808772299caf244
+    layout: flat
+    skills_path: .
+    alias_prefix: "gstack-"
+    include:
+      - plan-ceo-review
+      - office-hours
+      - autoplan
+      - investigate
+      - retro
+      - review
+      - checkpoint
+      - learn
+      - cso
+      - plan-design-review
+      - plan-devex-review
+      - plan-eng-review
+      - document-release
+      - design-consultation
+      - design-html
 
   # OpenAI .curated — skip SaaS-credentialed skills unless the operator uses them.
   - repo: openai/skills
     ref: main
     layout: flat
     skills_path: skills/.curated
+    alias_prefix: "openai-"
     exclude:
       - figma
       - linear
@@ -69,12 +150,6 @@ sources:
 
   # --- Deferred (declared for embeddings only; sync skips when active: false) ---
   - repo: Leonxlnx/taste-skill
-    ref: main
-    layout: multi-root
-    active: false
-    embeddings: false
-
-  - repo: garrytan/gstack
     ref: main
     layout: multi-root
     active: false
