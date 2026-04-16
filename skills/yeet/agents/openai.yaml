@@ -1,0 +1,3 @@
+interface:
+  display_name: "Yeet"
+  short_description: "Turn a worktree into commits and a pushed branch"

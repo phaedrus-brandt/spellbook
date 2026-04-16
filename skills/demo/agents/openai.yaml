@@ -1,0 +1,3 @@
+interface:
+  display_name: "Demo"
+  short_description: "Create demos, walkthroughs, and PR evidence"

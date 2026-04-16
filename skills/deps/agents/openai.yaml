@@ -1,0 +1,3 @@
+interface:
+  display_name: "Dependencies"
+  short_description: "Audit, test, and upgrade dependencies safely"

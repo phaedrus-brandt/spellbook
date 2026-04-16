@@ -1,0 +1,3 @@
+interface:
+  display_name: "A11y"
+  short_description: "Accessibility audits, fixes, and verification"

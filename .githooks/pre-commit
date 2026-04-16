@@ -37,4 +37,7 @@ echo "[pre-commit] Skill content changed — regenerating index.yaml"
 bash "$REPO_ROOT/scripts/generate-index.sh" > /dev/null
 git add "$REPO_ROOT/index.yaml"
 
+echo "[pre-commit] Skill content changed — validating Codex skill UI metadata"
+bash "$REPO_ROOT/scripts/test_skill_ui_metadata.sh" > /dev/null
+
 exit 0

@@ -135,6 +135,34 @@ link_file_if_present() {
   ok "    $label"
 }
 
+link_file_if_safe() {
+  local src="$1"
+  local dest="$2"
+  local label="$3"
+
+  [ -e "$src" ] || return 0
+
+  mkdir -p "$(dirname "$dest")"
+
+  if [ -L "$dest" ]; then
+    local target
+    target="$(readlink "$dest" || true)"
+    case "$target" in
+      "$SPELLBOOK"/*)
+        ln -sfn "$src" "$dest"
+        ok "    $label"
+        return 0
+        ;;
+    esac
+  elif [ -e "$dest" ]; then
+    warn "    $label exists and is not spellbook-managed; leaving it in place"
+    return 0
+  fi
+
+  ln -sfn "$src" "$dest"
+  ok "    $label"
+}
+
 link_dir_entries_if_present() {
   local src_dir="$1"
   local dest_dir="$2"
@@ -399,7 +427,12 @@ link_local() {
   else
     # Per-skill symlinks: first-party + external (first-party wins on name).
     local skill src
-    local skill_names=("${GLOBAL_SKILLS[@]}" "${EXTERNAL_SKILLS[@]}")
+    local skill_names=("${GLOBAL_SKILLS[@]}")
+    # Bash 3.2 + `set -u` treats `"${empty_array[@]}"` as unbound, so append
+    # externals only when present.
+    if [ "${#EXTERNAL_SKILLS[@]}" -gt 0 ]; then
+      skill_names+=("${EXTERNAL_SKILLS[@]}")
+    fi
     cleanup_symlinks_under_prefix "$skills_dir" "$SPELLBOOK/skills" "${skill_names[@]}"
     mkdir -p "$skills_dir"
     for skill in "${GLOBAL_SKILLS[@]}"; do
@@ -445,7 +478,10 @@ link_local() {
         ;;
       codex)
         cleanup_symlinks_under_prefix "$harness_dir/config" "$harness_config" "config.toml"
-        link_file_if_present "$harness_config/config.toml" "$harness_dir/config/config.toml" "config.toml"
+        # Codex loads ~/.codex/config.toml. Keep the legacy nested path in sync
+        # for older installs/tooling, but never clobber a user-owned config.
+        link_file_if_safe "$harness_config/config.toml" "$harness_dir/config.toml" "config.toml"
+        link_file_if_safe "$harness_config/config.toml" "$harness_dir/config/config.toml" "config/config.toml (legacy)"
         link_file_if_present "$SPELLBOOK/harnesses/shared/AGENTS.md" "$harness_dir/AGENTS.md" "AGENTS.md (← shared)"
         ;;
       pi)
