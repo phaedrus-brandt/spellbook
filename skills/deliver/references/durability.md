@@ -37,7 +37,7 @@ Every phase skill must be idempotent on partial runs:
 - `/qa` re-drives the running app
 
 This is a contract on phase skills, not a guarantee `/deliver` provides.
-See 033 (`/implement`) and 034 (`/ci`) for explicit idempotency clauses.
+See `/implement` and `/ci` skill docs for explicit idempotency clauses.
 
 ## `--resume <ulid>`
 

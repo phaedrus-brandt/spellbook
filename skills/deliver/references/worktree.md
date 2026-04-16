@@ -41,7 +41,7 @@ delivery, coordination via git branches, not file locks.
 
 ## Verification
 
-An oracle check in 032 verifies:
+The `/deliver` oracle verifies:
 
 > worktree-A and worktree-B each run `/deliver` on different branches
 > concurrently; both produce independent merge-ready receipts.

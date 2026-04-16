@@ -198,9 +198,3 @@ Classification: logic failure (behavior change in reducer)
 Action: escalated — human decision needed on reducer contract.
 ```
 
-## Follow-ups
-
-- `/settle` deprecation (Phase 3 of ticket 034) — deferred. `/settle`
-  retains review-comment and merge-coordination responsibilities until
-  those split out too. File follow-up ticket after this skill lands and
-  bakes for a cycle.

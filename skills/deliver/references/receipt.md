@@ -18,8 +18,8 @@ The entire `.spellbook/` tree is gitignored.
 {
   "schema_version": 1,
   "ulid": "01JXXX...",
-  "item_id": "032-deliver-inner-composer",
-  "branch": "feat/deliver-inner-composer",
+  "item_id": "<item-id>",
+  "branch": "feat/<item-slug>",
   "base_sha": "abc123...",
   "head_sha": "def456...",
   "status": "merge_ready | clean_loop_exhausted | phase_failed | aborted",
@@ -77,6 +77,6 @@ state is frozen. Re-invoking on the same item returns exit 41.
 
 - **Human:** `cat <state-dir>/receipt.json | jq` — read `status`,
   `remaining_work`, `recommended_next`.
-- **`/flywheel` outer (028):** reads `receipt.json`, emits one
+- **`/flywheel` outer loop:** reads `receipt.json`, emits one
   `deliver.done` event. Exit 0 → proceed to deploy phase. Non-zero →
   halt cycle with `phase.failed` event.

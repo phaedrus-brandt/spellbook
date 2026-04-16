@@ -170,12 +170,12 @@ For multi-cycle runs: one brief per cycle, then one aggregate summary.
 
 ## References
 
-See `backlog.d/028-flywheel-outer-loop-orchestrator.md` for:
+See `scripts/flywheel.sh --help` for:
 - Full eligibility filter and scoring formula (`pick`)
 - Manifest schema and budget accounting
-- Resume & abandon semantics (Phase 2b)
+- Resume & abandon semantics
 - Durability guarantees (D1–D5)
 - update-bucket mutation grammar
-- update-harness branch mechanics (Phase 2b)
+- update-harness branch mechanics
 - Stopping predicates (`--until`)
 - Worktree behavior

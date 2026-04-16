@@ -17,7 +17,7 @@ the branch is the unit of handoff to a human.
 
 - `<type>` is derived from the backlog item kind: `feat`, `fix`, `chore`,
   `refactor`, `docs`, `test`, `perf`
-- `<slug>` is the item id (e.g. `feat/032-deliver-inner-composer`)
+- `<slug>` is the item id (e.g. `feat/<item-id>`)
 
 Item kind comes from the backlog file: its filename prefix, or a `type/*`
 label on a git-bug issue, or explicit inference from the title.

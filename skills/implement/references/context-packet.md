@@ -57,7 +57,7 @@ Not hard-gated but sharply reduce builder error rate.
 ### `non-goals`
 
 Things that look in-scope but aren't. Prevents builder scope creep.
-Example: "Does not modify /deliver's SKILL.md — that's ticket 032."
+Example: "Does not modify /deliver's SKILL.md — that's a separate ticket."
 
 ### `constraints`
 
@@ -80,7 +80,7 @@ from "tests pass" to "these tests exist and pass."
 
 1. **Explicit path argument.** `/implement path/to/packet.md` — caller
    knows exactly which packet.
-2. **Backlog ID.** `/implement 033` → resolves to `backlog.d/033-*.md`
+2. **Backlog ID.** `/implement <NNN>` → resolves to `backlog.d/<NNN>-*.md`
    (glob match on prefix).
 3. **Session.** The most recent `/shape` output in the current
    conversation.

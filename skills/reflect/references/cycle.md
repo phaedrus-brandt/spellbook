@@ -2,8 +2,8 @@
 
 The learning engine of the outer loop. Read one cycle's artifacts, produce
 a typed findings file, mutate the backlog with evidence, and push harness
-suggestions to a branch. Consumed by `/flywheel` (outer loop, 028) and by
-future harness auto-tune work (GEPA / backlog item 031).
+suggestions to a branch. Consumed by `/flywheel` and by future harness
+auto-tune work (GEPA optimizer).
 
 ## When to Use This Mode
 
@@ -80,7 +80,7 @@ field names. Add fields, don't rename them.
   ],
   "bucket_mutations": [
     {"op": "create", "path": "backlog.d/NNN-...", "evidence_refs": ["F1"]},
-    {"op": "consolidate", "into": "backlog.d/014-...", "from": ["backlog.d/022-...", "backlog.d/028-..."], "evidence_refs": ["F3"]},
+    {"op": "consolidate", "into": "backlog.d/014-...", "from": ["backlog.d/<NNN>-...", "backlog.d/<NNN>-..."], "evidence_refs": ["F3"]},
     {"op": "delete", "path": "backlog.d/007-...", "evidence_refs": ["F4"]},
     {"op": "reprioritize", "path": "backlog.d/011-...", "from": "medium", "to": "high", "evidence_refs": ["F2"]}
   ],

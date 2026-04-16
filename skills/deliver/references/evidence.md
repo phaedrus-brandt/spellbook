@@ -37,7 +37,7 @@ feature branch, not in `<state-dir>`.
 
 ## Outer-Loop Override
 
-When `/flywheel` (028) invokes `/deliver`, it passes
+When `/flywheel` invokes `/deliver`, it passes
 `--state-dir backlog.d/_cycles/<ulid>/evidence/deliver/`. The cycle's
 evidence directory is also gitignored at its top level; the outer loop
 owns its own retention policy.

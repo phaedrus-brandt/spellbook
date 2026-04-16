@@ -192,8 +192,8 @@ containing `bootstrap.sh` AND `skills/` AND no `.spellbook/deploy.yaml`.
 
 ## Related
 
-- `/flywheel` (028) — outer-loop caller; passes merged sha + env
-- `/monitor` (036) — consumes this receipt, decides on rollback
+- `/flywheel` — outer-loop caller; passes merged sha + env
+- `/monitor` — consumes this receipt, decides on rollback
 - `/diagnose` — triages anomalies post-deploy
 - `/settle` / `/land` — merge gate that must pass before `/deploy` runs
 - `references/targets.md` — platform-specific recipes

@@ -16,7 +16,7 @@ argument-hint: "[backlog-item|issue-id] [--resume <ulid>] [--abandon <ulid>] [--
 # /deliver
 
 Inner-loop composer. One backlog item → merge-ready code. **Delivered ≠
-shipped.** The outer loop (`/flywheel`, see 028) consumes the receipt and
+shipped.** The outer loop (`/flywheel`) consumes the receipt and
 decides whether to deploy. Humans merge.
 
 ## Invariants
@@ -69,12 +69,12 @@ let the outer loop own the final session-level shipping brief.
   /shape            → context packet (goal + oracle + sequence)
     │
     ▼
-  /implement        → TDD build on feature branch (033)
+  /implement        → TDD build on feature branch
     │
     ▼
 ┌── CLEAN LOOP (max 3 iterations) ─────────────┐
 │  /code-review    → critic + bench             │
-│  /ci             → dagger audit + run (034)   │
+│  /ci             → dagger audit + run         │
 │  /refactor       → diff-aware simplify        │
 │  /qa             → browser-driven exploratory │
 │  capture evidence → see references/evidence.md│
@@ -192,7 +192,5 @@ Full protocol: `references/durability.md`.
 
 ## Related
 
-- Consumer: `/flywheel` (028) — outer loop passes `--state-dir` under its
-  cycle tree and reads `receipt.json`
-- Phases: `/shape`, `/implement` (033), `/code-review`, `/ci` (034),
-  `/refactor`, `/qa`
+- Consumer: `/flywheel` — outer loop passes `--state-dir` under its cycle tree and reads `receipt.json`
+- Phases: `/shape`, `/implement`, `/code-review`, `/ci`, `/refactor`, `/qa`
