@@ -1,0 +1,3 @@
+interface:
+  display_name: "CI"
+  short_description: "Audit, fix, and strengthen CI and quality gates"

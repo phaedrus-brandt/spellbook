@@ -1,0 +1,3 @@
+interface:
+  display_name: "Settle"
+  short_description: "Unblock PRs and drive branches to merge-ready"

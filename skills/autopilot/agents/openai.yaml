@@ -1,0 +1,3 @@
+interface:
+  display_name: "Autopilot"
+  short_description: "Run the outer delivery loop across backlog items"

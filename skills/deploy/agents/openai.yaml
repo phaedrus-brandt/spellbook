@@ -1,0 +1,3 @@
+interface:
+  display_name: "Deploy"
+  short_description: "Ship merged code and capture deploy receipts"

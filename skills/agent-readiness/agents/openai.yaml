@@ -1,0 +1,3 @@
+interface:
+  display_name: "Agent Readiness"
+  short_description: "Assess and improve AI-agent codebase readiness"

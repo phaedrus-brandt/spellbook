@@ -1,0 +1,3 @@
+interface:
+  display_name: "Investigate"
+  short_description: "Debug failures, audit domains, and fix issues"
